@@ -42,7 +42,12 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        #map, #viewMap { height: 220px; width: 100%; border-radius: 0.75rem; }
+        #map { height: 230px; width: 100%; border-radius: 0.75rem; z-index: 1; }
+        /* Custom Scrollbar for Master Access Sheet Modal */
+        .modal-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 8px; }
+        .modal-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col">
@@ -112,10 +117,10 @@
                     <p class="text-xs text-green-100">Manage Upazila Units, Events, Interactive Map & Custom Forms</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1 hidden">
-                        <i class="fa-solid fa-key"></i> Master Access
+                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
+                        <i class="fa-solid fa-key"></i> Master Access Sheet
                     </button>
-                    <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1">
+                    <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-plus"></i> Create Event + Form
                     </button>
                 </div>
@@ -168,7 +173,7 @@
 
     </main>
 
-    <!-- CREATE/EDIT EVENT MODAL WITH MAP & INTEGRATED ADVANCED FORM BUILDER -->
+    <!-- CREATE/EDIT EVENT MODAL WITH SEARCHABLE MAP & INTEGRATED ADVANCED FORM BUILDER -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
@@ -202,11 +207,20 @@
                     </div>
                 </div>
 
-                <!-- MAP & GEO-FENCING RADIUS SETTINGS -->
+                <!-- MAP & SEARCH LOCATION SETTINGS -->
                 <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="block text-xs font-bold text-gray-700 uppercase"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> Select Geofence Location on Map</label>
-                        <span class="text-[10px] text-gray-500">Click on map to pin position</span>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
+                        <label class="block text-xs font-bold text-gray-700 uppercase"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> Location & Geofence Radius</label>
+                        <span class="text-[10px] text-gray-500">Search location or click on map</span>
+                    </div>
+
+                    <!-- Location Search Input Bar -->
+                    <div class="flex gap-2 mb-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="mapSearchInput" placeholder="Search location (e.g. Bahadur Shah Park, Dhaka)" class="w-full border rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
+                        </div>
+                        <button type="button" onclick="searchLocationOnMap()" class="bg-vbdGreen text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700">Search</button>
                     </div>
                     
                     <div id="map"></div>
@@ -227,7 +241,7 @@
                     </div>
                 </div>
 
-                <!-- INTEGRATED ADVANCED FORM BUILDER (GOOGLE FORMS ALTERNATIVE) -->
+                <!-- INTEGRATED ADVANCED FORM BUILDER -->
                 <div class="bg-gradient-to-r from-red-50 to-green-50 p-3 sm:p-4 rounded-xl border border-gray-200 space-y-3">
                     <div class="flex justify-between items-center border-b border-gray-200 pb-2">
                         <h4 class="font-bold text-xs sm:text-sm text-gray-800"><i class="fa-solid fa-wpforms text-vbdGreen mr-1"></i> Advanced Form Setup</h4>
@@ -264,11 +278,10 @@
         </div>
     </div>
 
-    <!-- PUBLIC / VOLUNTEER CUSTOM REGISTRATION FORM MODAL (ADVANCED THEMED) -->
+    <!-- PUBLIC / VOLUNTEER CUSTOM REGISTRATION FORM MODAL -->
     <div id="publicRegisterModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 my-6 overflow-hidden relative">
             
-            <!-- Animated Header Theme -->
             <div class="bg-gradient-to-r from-vbdRed via-vbdGreen to-vbdDarkGreen animate-gradient-x p-4 text-white -m-4 sm:-m-6 mb-4 rounded-t-2xl">
                 <h3 id="publicFormTitle" class="font-bold text-base sm:text-xl">Registration Form</h3>
                 <p id="publicFormDesc" class="text-xs text-gray-100 mt-1"></p>
@@ -324,30 +337,200 @@
         </div>
     </div>
 
-    <!-- MASTER ACCESS MANAGEMENT SHEET MODAL -->
+    <!-- MASTER ACCESS SHEET MODAL (RESTORED EXACTLY AS SCREENSHOT) -->
     <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] flex flex-col relative">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b pb-3">
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-key text-vbdYellow mr-1"></i> Master Access Permission Control</h3>
-                    <p class="text-xs text-gray-500">Update Gmail IDs for Annual Access Transfer</p>
+                    <h3 class="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
+                        <span class="text-vbdYellow"><i class="fa-solid fa-key"></i></span>
+                        Master Access Sheet (Annual Permission Control)
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Update Gmail IDs to transfer admin roles yearly without losing history</p>
                 </div>
-                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600 p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
-                <div class="bg-red-50 p-3 rounded-xl border border-red-100 space-y-2">
-                    <h4 class="font-bold text-vbdRed">District Board Members (6 Roles)</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="districtBoardInputs"></div>
+            <!-- Active Board Tenure Bar -->
+            <div class="bg-gray-50 border rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="font-bold text-gray-700">Active Board Tenure Year:</span>
+                    <select id="boardTenureYear" class="border rounded-lg px-2.5 py-1 text-xs font-bold text-vbdGreen bg-white outline-none focus:ring-1 focus:ring-vbdGreen">
+                        <option value="2026">2026 Session</option>
+                        <option value="2027">2027 Session</option>
+                        <option value="2028">2028 Session</option>
+                    </select>
                 </div>
-
-                <div class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
-                    <h4 class="font-bold text-vbdGreen">Upazila Board Members (4 Units)</h4>
-                    <div id="upazilaBoardInputs" class="space-y-2"></div>
+                <div class="text-[11px] text-vbdGreen font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i> Emails get auto-access links via Gmail
                 </div>
             </div>
 
-            <button onclick="saveAndSendAccessEmails()" class="w-full py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm">Save & Email Access Tokens</button>
+            <!-- Scrollable Content Section -->
+            <div class="flex-1 overflow-y-auto space-y-4 pr-1 modal-scroll">
+
+                <!-- 1. District Board Member Access (6 Positions) -->
+                <div class="border border-red-200 bg-red-50/40 rounded-2xl p-4 space-y-3">
+                    <h4 class="font-bold text-vbdRed text-xs sm:text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-crown text-xs"></i> District Board Member Access (6 Positions)
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">Vice President Email</label>
+                            <input type="email" value="vp.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">General Secretary Email</label>
+                            <input type="email" value="gs.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">HR Secretary Email</label>
+                            <input type="email" value="hr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">PR Secretary Email</label>
+                            <input type="email" value="pr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">Finance Secretary Email</label>
+                            <input type="email" value="finance.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-600 mb-1">Logistics Secretary Email</label>
+                            <input type="email" value="logistics.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Upazila Board Members Access (5 Positions per Upazila) -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-vbdGreen text-xs sm:text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-building-flag text-xs"></i> Upazila Board Members Access (5 Positions per Upazila)
+                    </h4>
+
+                    <!-- 1. Dhaka South City Corporation Board -->
+                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
+                        <h5 class="font-bold text-gray-800 text-xs">1. Dhaka South City Corporation Board</h5>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
+                                <input type="email" value="pres.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
+                                <input type="email" value="gs.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
+                                <input type="email" value="hr.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
+                                <input type="email" value="proj.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
+                                <input type="email" value="fin.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Keraniganj Upazila Board -->
+                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
+                        <h5 class="font-bold text-gray-800 text-xs">2. Keraniganj Upazila Board</h5>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
+                                <input type="email" value="pres.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
+                                <input type="email" value="gs.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
+                                <input type="email" value="hr.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
+                                <input type="email" value="proj.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
+                                <input type="email" value="fin.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Dohar Upazila Board -->
+                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
+                        <h5 class="font-bold text-gray-800 text-xs">3. Dohar Upazila Board</h5>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
+                                <input type="email" value="pres.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
+                                <input type="email" value="gs.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
+                                <input type="email" value="hr.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
+                                <input type="email" value="proj.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
+                                <input type="email" value="fin.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Nababganj Upazila Board -->
+                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
+                        <h5 class="font-bold text-gray-800 text-xs">4. Nababganj Upazila Board</h5>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
+                                <input type="email" value="pres.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
+                                <input type="email" value="gs.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
+                                <input type="email" value="hr.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
+                                <input type="email" value="proj.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
+                                <input type="email" value="fin.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Footer Action Buttons -->
+            <div class="pt-3 border-t flex justify-end gap-2">
+                <button type="button" onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="button" onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700 flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Save & Send Access Mails
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -376,7 +559,7 @@
             }
         ];
 
-        // INITIALIZE MAP
+        // INITIALIZE MAP & SEARCH FUNCTIONALITY
         function initMap(lat = 23.7099, lng = 90.4117, radius = 300) {
             setTimeout(() => {
                 if (!map) {
@@ -409,6 +592,30 @@
                     circle.setRadius(radius);
                 }
             }, 300);
+        }
+
+        function searchLocationOnMap() {
+            const query = document.getElementById('mapSearchInput').value;
+            if (!query) return;
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        map.setView([lat, lon], 15);
+                        marker.setLatLng([lat, lon]);
+                        circle.setLatLng([lat, lon]);
+
+                        document.getElementById('evLat').value = lat.toFixed(6);
+                        document.getElementById('evLng').value = lon.toFixed(6);
+                    } else {
+                        alert("Location not found. Please try typing a more specific address or venue name.");
+                    }
+                })
+                .catch(() => alert("Error searching location. Please check internet connection."));
         }
 
         function updateMapCircle() {
@@ -767,7 +974,7 @@
         }
 
         function saveAndSendAccessEmails() {
-            alert("Master Access Emails Saved! Automated access tokens dispatched to respective board members.");
+            alert("Master Access Emails Saved! Automated access tokens dispatched via Gmail to respective board members.");
             closeModal('masterAccessModal');
         }
 
