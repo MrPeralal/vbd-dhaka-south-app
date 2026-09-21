@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBD Dhaka South - Smart Management Portal</title>
+    <title>VBD Dhaka South - Automated Management Portal</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -11,6 +11,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Leaflet CSS (100% Free Map Library) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <script>
         tailwind.config = {
             theme: {
@@ -30,21 +33,19 @@
     </script>
     <style>
         body { font-family: 'Hind Siliguri', sans-serif; }
-        #googleMap { height: 320px; width: 100%; border-radius: 12px; }
-        .pac-container {
-            z-index: 99999 !important;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        #leafletMap { height: 300px; width: 100%; border-radius: 12px; z-index: 10; }
+        .search-suggestion-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
             border: 1px solid #e5e7eb;
-            font-family: 'Hind Siliguri', sans-serif;
-            margin-top: 5px;
-        }
-        .pac-item {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        .pac-item:hover {
-            background-color: #f3f4f6;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -113,7 +114,7 @@
             <div id="adminControls" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-bold">ইভেন্ট ম্যানেজমেন্ট প্যানেল</h3>
-                    <p class="text-xs text-green-100">গুগল ম্যাপস লাইভ লোকেশন সার্চ দিয়ে নতুন ইভেন্ট ক্রিয়েট করুন</p>
+                    <p class="text-xs text-green-100">ইন্টারেক্টিভ ফ্রি মানচিত্র সার্চ দিয়ে নতুন ইভেন্ট যুক্ত করুন</p>
                 </div>
                 <button onclick="openCreateEventModal()" class="px-4 py-2.5 bg-vbdYellow text-gray-900 rounded-xl font-bold text-sm shadow hover:bg-yellow-400 transition flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle"></i> নতুন ইভেন্ট যুক্ত করুন
@@ -131,7 +132,7 @@
     <div id="createEventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 my-8">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> গুগল ম্যাপস ইভেন্ট ভেন্যু সেটআপ</h3>
+                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> ইভেন্ট ভেন্যু মানচিত্র সেটআপ</h3>
                 <button onclick="closeCreateEventModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
@@ -141,22 +142,23 @@
                     <input type="text" id="evName" required placeholder="যেমন: প্লাস্টিক ক্লিনিং ড্রাইভ" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                 </div>
 
-                <!-- Google Places Search with Search Button -->
-                <div>
+                <!-- Live Auto-Suggest Search Input -->
+                <div class="relative">
                     <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> ভেন্যু/স্থানের নাম লিখে সার্চ করুন *
+                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> স্থান সার্চ করুন (টাইপ করলেই সাজেশন আসবে) *
                     </label>
                     <div class="flex gap-2">
-                        <input type="text" id="googleSearchInput" placeholder="যেমন: Star Kabab, Dhanmondi 27, Bahadur Shah Park" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                        <button type="button" onclick="triggerManualSearch()" class="px-4 py-2 bg-vbdGreen text-white font-bold text-xs rounded-xl hover:bg-green-700 transition flex items-center gap-1">
+                        <input type="text" id="searchInput" oninput="handleSearchTyping()" placeholder="যেমন: Jaago Foundation, Bahadur Shah Park, Dhanmondi" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <button type="button" onclick="performManualSearch()" class="px-4 py-2 bg-vbdGreen text-white font-bold text-xs rounded-xl hover:bg-green-700 transition">
                             <i class="fa-solid fa-magnifying-glass"></i> খুঁজুন
                         </button>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-1">* টাইপ করলে নিচে সাজেশন আসবে, অথবা নাম লিখে 'খুঁজুন' বাটনে ক্লিক করুন।</p>
+                    <!-- Auto Suggestion List -->
+                    <div id="suggestionsList" class="search-suggestion-box hidden"></div>
                 </div>
 
-                <!-- Map View -->
-                <div id="googleMap"></div>
+                <!-- Map Container -->
+                <div id="leafletMap"></div>
 
                 <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg border">
                     <div>অক্ষাংশ (Lat): <span id="displayLat" class="font-bold text-gray-800">23.7099</span></div>
@@ -171,13 +173,14 @@
         </div>
     </div>
 
-    <!-- Official Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBdA4_uWRBaGDt-oCwCOMfx4jJx_r9w0Q&libraries=places&callback=initGoogleMap" async defer></script>
+    <!-- Leaflet JS (Open-Source Free Maps) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        let gMap, gMarker, autocomplete, geocoder;
+        let map, marker;
         let selectedCoords = { lat: 23.7099, lng: 90.4117 };
         let selectedAddress = "বাহাদুর শাহ পার্ক, ঢাকা";
+        let debounceTimer;
 
         window.eventsList = [
             {
@@ -189,102 +192,102 @@
             }
         ];
 
-        function initGoogleMap() {
-            const defaultPos = { lat: 23.7099, lng: 90.4117 };
-            
-            geocoder = new google.maps.Geocoder();
+        function initMap() {
+            if (map) return; // Prevent re-initialization
 
-            gMap = new google.maps.Map(document.getElementById("googleMap"), {
-                center: defaultPos,
-                zoom: 15,
-                mapTypeControl: false,
+            map = L.map('leafletMap').setView([23.7099, 90.4117], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            marker = L.marker([23.7099, 90.4117], { draggable: true }).addTo(map);
+
+            // Drag end listener
+            marker.on('dragend', function (e) {
+                const coord = marker.getLatLng();
+                updateCoords(coord.lat, coord.lng);
             });
 
-            gMarker = new google.maps.Marker({
-                position: defaultPos,
-                map: gMap,
-                draggable: true,
-                title: "ইভেন্ট ভেন্যু"
-            });
-
-            // Setup Auto-complete
-            const searchInput = document.getElementById("googleSearchInput");
-            
-            // Limit bounds to Bangladesh
-            const defaultBounds = new google.maps.LatLngBounds(
-                new google.maps.LatLng(20.5707, 88.0844),
-                new google.maps.LatLng(26.6345, 92.6727)
-            );
-
-            autocomplete = new google.maps.places.Autocomplete(searchInput, {
-                bounds: defaultBounds,
-                componentRestrictions: { country: "bd" },
-                fields: ["address_components", "geometry", "icon", "name"]
-            });
-
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry || !place.geometry.location) {
-                    triggerManualSearch();
-                    return;
-                }
-
-                locateOnMap(place.geometry.location, place.name || place.formatted_address);
-            });
-
-            // Drag Event
-            gMarker.addListener("dragend", () => {
-                const pos = gMarker.getPosition();
-                updateLocationData(pos.lat(), pos.lng());
-            });
-
-            // Click Event
-            gMap.addListener("click", (e) => {
-                gMarker.setPosition(e.latLng);
-                updateLocationData(e.latLng.lat(), e.latLng.lng());
+            // Map click listener
+            map.on('click', function (e) {
+                marker.setLatLng(e.latlng);
+                updateCoords(e.latlng.lat, e.latlng.lng);
             });
         }
 
-        // Manual Geocoding Search (If dropdown doesn't appear or button is clicked)
-        function triggerManualSearch() {
-            const query = document.getElementById("googleSearchInput").value;
-            if (!query) {
-                alert("দয়া করে স্থানের নাম লিখুন।");
+        // Auto suggestion search using OpenStreetMap Nominatim API
+        function handleSearchTyping() {
+            clearTimeout(debounceTimer);
+            const query = document.getElementById('searchInput').value.trim();
+            const box = document.getElementById('suggestionsList');
+
+            if (query.length < 3) {
+                box.classList.add('hidden');
                 return;
             }
 
-            geocoder.geocode({ address: query + ", Bangladesh" }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    const location = results[0].geometry.location;
-                    locateOnMap(location, results[0].formatted_address);
-                } else {
-                    alert("স্থানটি পাওয়া যায়নি। অন্য কোনো স্পষ্ট নাম দিয়ে চেষ্টা করুন।");
-                }
-            });
+            debounceTimer = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=bd&limit=5`)
+                    .then(res => res.json())
+                    .then(data => {
+                        box.innerHTML = '';
+                        if (data.length === 0) {
+                            box.innerHTML = `<div class="p-3 text-xs text-gray-500">কোনো স্থান পাওয়া যায়নি</div>`;
+                        } else {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'p-2.5 text-xs text-gray-700 hover:bg-green-50 cursor-pointer border-b border-gray-100 flex items-center gap-2';
+                                div.innerHTML = `<i class="fa-solid fa-location-dot text-vbdRed"></i> <span>${item.display_name}</span>`;
+                                div.onclick = () => selectSearchResult(item.lat, item.lon, item.display_name);
+                                box.appendChild(div);
+                            });
+                        }
+                        box.classList.remove('hidden');
+                    });
+            }, 300);
         }
 
-        function locateOnMap(location, addressName) {
-            gMap.setCenter(location);
-            gMap.setZoom(17);
-            gMarker.setPosition(location);
-            updateLocationData(location.lat(), location.lng(), addressName);
+        function performManualSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=bd&limit=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        selectSearchResult(data[0].lat, data[0].lon, data[0].display_name);
+                    } else {
+                        alert('স্থানটি পাওয়া যায়নি, অনুগ্রহ করে অন্য নামে চেষ্টা করুন।');
+                    }
+                });
         }
 
-        function updateLocationData(lat, lng, addressName = null) {
+        function selectSearchResult(lat, lon, addressName) {
+            const latitude = parseFloat(lat);
+            const longitude = parseFloat(lon);
+            
+            map.setView([latitude, longitude], 16);
+            marker.setLatLng([latitude, longitude]);
+            updateCoords(latitude, longitude, addressName);
+            
+            document.getElementById('searchInput').value = addressName.split(',')[0];
+            document.getElementById('suggestionsList').classList.add('hidden');
+        }
+
+        function updateCoords(lat, lng, address = null) {
             selectedCoords = { lat, lng };
-            document.getElementById("displayLat").innerText = lat.toFixed(5);
-            document.getElementById("displayLng").innerText = lng.toFixed(5);
-            if (addressName) {
-                selectedAddress = addressName;
-            }
+            document.getElementById('displayLat').innerText = lat.toFixed(5);
+            document.getElementById('displayLng').innerText = lng.toFixed(5);
+            if (address) selectedAddress = address;
         }
 
         function openCreateEventModal() {
             document.getElementById('createEventModal').classList.remove('hidden');
-            if (gMap) {
-                google.maps.event.trigger(gMap, "resize");
-                gMap.setCenter(selectedCoords);
-            }
+            setTimeout(() => {
+                initMap();
+                map.invalidateSize(); // Fix map render issue inside modal
+            }, 200);
         }
 
         function closeCreateEventModal() {
@@ -315,7 +318,7 @@
 
         function saveNewEvent(e) {
             e.preventDefault();
-            const venueInput = document.getElementById('googleSearchInput').value || selectedAddress;
+            const venueInput = document.getElementById('searchInput').value || selectedAddress;
             window.eventsList.unshift({
                 id: 'ev_' + Date.now(),
                 title: document.getElementById('evName').value,
@@ -325,7 +328,7 @@
             });
             closeCreateEventModal();
             renderEvents();
-            alert('গুগল ম্যাপস লোকেশন সহ ইভেন্ট সফলভাবে পাবলিশ করা হয়েছে!');
+            alert('সফলভাবে ইভেন্ট এবং ভেন্যু লোকেশন সেভ হয়েছে!');
         }
 
         function logout() {
