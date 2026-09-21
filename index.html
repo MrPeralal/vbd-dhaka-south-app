@@ -1,993 +1,455 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBD Dhaka South - Automated Enterprise Platform</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+import React, { useState } from 'react';
+import { 
+  PlusCircle, Trash2, Copy, Eye, Send, Settings, BarChart2, 
+  CheckSquare, Circle, Type, FileText, Share2, Download, 
+  UserPlus, CheckCircle, Link, Globe, ArrowLeft, RefreshCw
+} from 'lucide-react';
+
+export default function EventFormSystem() {
+  const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'preview' | 'responses'
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isShortUrl, setIsShortUrl] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Form & Event State
+  const [formState, setFormState] = useState({
+    eventId: "EVT-2026-99",
+    eventName: "Annual Youth Summit 2026",
+    title: "Event Registration & Membership Form",
+    description: "Please fill in your details to register for the upcoming event.",
+    themeColor: "#1a73e8",
+    bgColor: "#f4f6f9",
+    questions: [
+      { id: "q1", title: "Full Name", type: "Short Answer", required: true, options: [] },
+      { id: "q2", title: "Email Address", type: "Short Answer", required: true, options: [] },
+      { id: "q3", title: "Phone Number", type: "Short Answer", required: true, options: [] },
+      { 
+        id: "q4", 
+        title: "Is this your first time joining us?", 
+        type: "Multiple Choice", 
+        required: true, 
+        options: ["Yes (Create New Profile)", "No (Existing Member)"] 
+      }
+    ]
+  });
+
+  // Submitted Registrations / Responses Database State
+  const [responses, setResponses] = useState([
+    {
+      id: "REG-001",
+      name: "Tanvir Ahmed",
+      email: "tanvir@example.com",
+      phone: "+8801700000000",
+      isNewMember: true,
+      profileCreated: true,
+      profileId: "USR-8801",
+      submittedAt: "2026-09-21 10:15 AM"
+    },
+    {
+      id: "REG-002",
+      name: "Rahim Chowdhury",
+      email: "rahim@example.com",
+      phone: "+8801800000000",
+      isNewMember: false,
+      profileCreated: false,
+      profileId: "USR-1022 (Existing)",
+      submittedAt: "2026-09-21 11:30 AM"
+    }
+  ]);
+
+  // Form Builder Controls
+  const addQuestion = (type = "Short Answer") => {
+    const newQ = {
+      id: `q_${Date.now()}`,
+      title: "Untitled Question",
+      type: type,
+      required: false,
+      options: type === "Multiple Choice" ? ["Option 1"] : []
+    };
+    setFormState({ ...formState, questions: [...formState.questions, newQ] });
+  };
+
+  const updateQuestion = (id, key, value) => {
+    setFormState({
+      ...formState,
+      questions: formState.questions.map(q => q.id === id ? { ...q, [key]: value } : q)
+    });
+  };
+
+  const deleteQuestion = (id) => {
+    setFormState({
+      ...formState,
+      questions: formState.questions.filter(q => q.id !== id)
+    });
+  };
+
+  // User Submission Handling
+  const handleUserSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const name = formData.get("Full Name") || "New User";
+    const email = formData.get("Email Address") || "user@example.com";
+    const phone = formData.get("Phone Number") || "N/A";
+    const firstTime = formData.get("Is this your first time joining us?");
+
+    const isNew = firstTime?.includes("Yes");
+
+    const newRegistration = {
+      id: `REG-00${responses.length + 1}`,
+      name,
+      email,
+      phone,
+      isNewMember: isNew,
+      profileCreated: isNew, // Auto profile creation logic trigger
+      profileId: isNew ? `USR-${Math.floor(1000 + Math.random() * 9000)}` : "Existing Member",
+      submittedAt: new Date().toLocaleString()
+    };
+
+    setResponses([newRegistration, ...responses]);
+    alert(isNew 
+      ? "Registration Successful! A new profile has been automatically created for you." 
+      : "Registration Successful! Welcome back."
+    );
+    setActiveTab('responses');
+  };
+
+  // Export Data to CSV/Excel Format
+  const exportToExcel = () => {
+    const headers = ["Registration ID,Name,Email,Phone,Is New Member,Profile ID,Submitted At\n"];
+    const rows = responses.map(r => 
+      `"${r.id}","${r.name}","${r.email}","${r.phone}","${r.isNewMember ? 'Yes' : 'No'}","${r.profileId}","${r.submittedAt}"\n`
+    );
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        vbdRed: '#E31B23',
-                        vbdGreen: '#006A4E',
-                        vbdDarkGreen: '#004D38',
-                        vbdYellow: '#FFC72C'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .modal-scroll::-webkit-scrollbar { width: 6px; }
-        .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 8px; }
-        .modal-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-    </style>
-</head>
-<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col">
+    const blob = new Blob([...headers, ...rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${formState.eventName}_Registrations.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-md border-b-4 border-vbdRed sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 sm:h-20 items-center">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <img src="https://ui-avatars.com/api/?name=VBD+Dhaka+South&background=E31B23&color=fff&size=128" 
-                         alt="VBD Logo" class="h-10 sm:h-12 w-auto object-contain">
-                    <div>
-                        <h1 class="font-bold text-sm sm:text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
-                        <p class="text-[10px] sm:text-xs text-vbdGreen font-bold tracking-wide">Dhaka South District Panel</p>
-                    </div>
+  const fullLink = `https://yourapp.com/events/${formState.eventId}/register`;
+  const shortLink = `https://app.link/e/${formState.eventId.toLowerCase()}`;
+
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
+      {/* Top Header Toolbar */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-600 text-white rounded-lg">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="font-bold text-slate-800 text-lg leading-tight">{formState.title}</h1>
+            <p className="text-xs text-slate-500">Linked Event: <span className="font-medium text-indigo-600">{formState.eventName}</span></p>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button 
+            onClick={() => setActiveTab('builder')}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'builder' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            Questions
+          </button>
+          <button 
+            onClick={() => setActiveTab('responses')}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'responses' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            Responses
+            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs">{responses.length}</span>
+          </button>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setActiveTab('preview')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+          >
+            <Eye className="w-4 h-4" /> Live Preview
+          </button>
+          <button 
+            onClick={() => setIsSendModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition"
+          >
+            <Send className="w-4 h-4" /> Get Link
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Body */}
+      <main className="max-w-4xl mx-auto py-8 px-4">
+        
+        {/* TAB 1: FORM BUILDER MODE */}
+        {activeTab === 'builder' && (
+          <div className="space-y-6">
+            {/* Header Customizer Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-t-8 border-t-indigo-600">
+              <input 
+                type="text" 
+                value={formState.title} 
+                onChange={(e) => setFormState({ ...formState, title: e.target.value })}
+                className="text-2xl font-bold w-full border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-none pb-1 transition"
+                placeholder="Form Title"
+              />
+              <textarea 
+                value={formState.description}
+                onChange={(e) => setFormState({ ...formState, description: e.target.value })}
+                className="w-full mt-3 text-slate-600 border-b border-transparent hover:border-slate-300 focus:border-indigo-600 focus:outline-none resize-none transition text-sm"
+                placeholder="Form Description"
+                rows={2}
+              />
+            </div>
+
+            {/* Questions List */}
+            {formState.questions.map((q, idx) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4 hover:border-indigo-200 transition">
+                <div className="flex items-center justify-between gap-4">
+                  <input 
+                    type="text" 
+                    value={q.title}
+                    onChange={(e) => updateQuestion(q.id, 'title', e.target.value)}
+                    className="font-medium text-slate-800 w-full border-b border-slate-200 focus:border-indigo-600 focus:outline-none py-1"
+                  />
+                  <select 
+                    value={q.type}
+                    onChange={(e) => updateQuestion(q.id, 'type', e.target.value)}
+                    className="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="Short Answer">Short Answer</option>
+                    <option value="Paragraph">Paragraph</option>
+                    <option value="Multiple Choice">Multiple Choice</option>
+                    <option value="Checkboxes">Checkboxes</option>
+                  </select>
                 </div>
-                
-                <!-- Active User Profile Bar -->
-                <div id="navUserMenu" class="flex items-center space-x-2 hidden">
-                    <div class="text-right hidden md:block">
-                        <p id="navUserName" class="text-xs sm:text-sm font-bold text-gray-800">User Name</p>
-                        <p id="navUserRole" class="text-[10px] sm:text-[11px] text-vbdGreen font-semibold">Designation</p>
-                    </div>
-                    <button onclick="logout()" class="text-xs sm:text-sm font-medium text-gray-600 hover:text-vbdRed transition bg-gray-100 px-2.5 py-1.5 rounded-lg border">
-                        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Logout</span>
+
+                {/* Option Input Mock for Multiple Choice */}
+                {q.type === 'Multiple Choice' && (
+                  <div className="space-y-2 pl-2">
+                    {q.options.map((opt, oIdx) => (
+                      <div key={oIdx} className="flex items-center gap-2">
+                        <Circle className="w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          value={opt} 
+                          onChange={(e) => {
+                            const newOpts = [...q.options];
+                            newOpts[oIdx] = e.target.value;
+                            updateQuestion(q.id, 'options', newOpts);
+                          }}
+                          className="text-sm text-slate-700 border-b border-slate-200 focus:outline-none"
+                        />
+                      </div>
+                    ))}
+                    <button 
+                      onClick={() => updateQuestion(q.id, 'options', [...q.options, `Option ${q.options.length + 1}`])}
+                      className="text-xs text-indigo-600 hover:underline font-medium pt-1"
+                    >
+                      + Add Option
                     </button>
+                  </div>
+                )}
+
+                {/* Card Controls */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={q.required} 
+                        onChange={(e) => updateQuestion(q.id, 'required', e.target.checked)}
+                        className="rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span>Required Field</span>
+                    </label>
+                  </div>
+                  <button 
+                    onClick={() => deleteQuestion(q.id)} 
+                    className="text-rose-500 hover:text-rose-700 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
+              </div>
+            ))}
+
+            {/* Add Field Button */}
+            <button 
+              onClick={() => addQuestion("Short Answer")}
+              className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-600 hover:border-indigo-500 hover:text-indigo-600 font-medium flex items-center justify-center gap-2 bg-white transition"
+            >
+              <PlusCircle className="w-5 h-5" /> Add Question
+            </button>
+          </div>
+        )}
+
+        {/* TAB 2: LIVE PREVIEW / RESPONDER MODE */}
+        {activeTab === 'preview' && (
+          <form onSubmit={handleUserSubmit} className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-t-8 border-t-indigo-600">
+              <h2 className="text-2xl font-bold text-slate-900">{formState.title}</h2>
+              <p className="text-sm text-slate-600 mt-2">{formState.description}</p>
             </div>
-        </div>
-    </nav>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+            {formState.questions.map((q) => (
+              <div key={q.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-3">
+                <label className="block text-sm font-semibold text-slate-800">
+                  {q.title} {q.required && <span className="text-rose-500">*</span>}
+                </label>
 
-        <!-- AUTHENTICATION / ROLE SELECTOR -->
-        <div id="authSection" class="max-w-xl mx-auto my-4 sm:my-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
-            <div class="text-center mb-5">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Select Role Prototype</h2>
-                <p class="text-xs text-gray-500 mt-1">Test HR Proximity Check-in & Hierarchy Management</p>
+                {q.type === 'Short Answer' && (
+                  <input 
+                    type="text" 
+                    name={q.title}
+                    required={q.required}
+                    placeholder="Your answer"
+                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                )}
+
+                {q.type === 'Multiple Choice' && (
+                  <div className="space-y-2">
+                    {q.options.map((opt, i) => (
+                      <label key={i} className="flex items-center gap-3 p-2 border border-slate-100 rounded-lg hover:bg-slate-50 cursor-pointer">
+                        <input type="radio" name={q.title} value={opt} required={q.required} className="text-indigo-600" />
+                        <span className="text-sm text-slate-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <button 
+              type="submit" 
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition"
+            >
+              Submit Registration
+            </button>
+          </form>
+        )}
+
+        {/* TAB 3: RESPONSES & EXCEL EXPORT */}
+        {activeTab === 'responses' && (
+          <div className="space-y-6">
+            {/* Analytics Header */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">{responses.length} Total Registrations</h3>
+                <p className="text-xs text-slate-500 mt-1">Real-time attendance & profile creation status</p>
+              </div>
+              <button 
+                onClick={exportToExcel}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm transition"
+              >
+                <Download className="w-4 h-4" /> Export to Excel / CSV
+              </button>
             </div>
 
-            <div class="space-y-3">
-                <button onclick="loginAs('district_president')" class="w-full p-3 bg-red-50 hover:bg-red-100 text-vbdRed border border-red-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-crown mr-2"></i> District President / VP (Master Access)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-vbdRed text-white px-2 py-0.5 rounded">Master Admin</span>
+            {/* Registrations Data Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-medium">
+                  <tr>
+                    <th className="p-4">Reg ID</th>
+                    <th className="p-4">User Details</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Profile ID</th>
+                    <th className="p-4">Submitted At</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {responses.map((res) => (
+                    <tr key={res.id} className="hover:bg-slate-50/50 transition">
+                      <td className="p-4 font-mono text-xs text-indigo-600 font-semibold">{res.id}</td>
+                      <td className="p-4">
+                        <div className="font-medium text-slate-900">{res.name}</div>
+                        <div className="text-xs text-slate-500">{res.email} | {res.phone}</div>
+                      </td>
+                      <td className="p-4">
+                        {res.isNewMember ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                            <UserPlus className="w-3 h-3" /> New Profile Created
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                            Existing Member
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 font-mono text-xs">{res.profileId}</td>
+                      <td className="p-4 text-xs text-slate-500">{res.submittedAt}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* SHARE / SHORT LINK MODAL */}
+      {isSendModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-indigo-600" /> Share Registration Form
+              </h3>
+              <button onClick={() => setIsSendModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Send this registration link to your members or share it across social groups.
+            </p>
+
+            {/* URL Toggle Box */}
+            <div className="space-y-3 pt-2">
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={isShortUrl} 
+                  onChange={(e) => setIsShortUrl(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                Shorten URL (Google Forms Style)
+              </label>
+
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2">
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={isShortUrl ? shortLink : fullLink}
+                  className="bg-transparent text-xs w-full text-slate-700 font-mono focus:outline-none"
+                />
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(isShortUrl ? shortLink : fullLink);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition shrink-0"
+                >
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
-
-                <button onclick="loginAs('hr_lead')" class="w-full p-3 bg-green-50 hover:bg-green-100 text-vbdGreen border border-green-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user-shield mr-2"></i> HR Secretary / Event In-Charge (Location Host)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">HR Lead</span>
-                </button>
-
-                <button onclick="loginAs('general_volunteer')" class="w-full p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user mr-2"></i> General Volunteer / Participant</span>
-                    <span class="text-[9px] sm:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Basic Access</span>
-                </button>
+              </div>
             </div>
+
+            <div className="pt-2 text-right">
+              <button 
+                onClick={() => setIsSendModalOpen(false)} 
+                className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-200 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
-
-        <!-- DASHBOARD CONTAINER -->
-        <div id="dashboardSection" class="hidden space-y-4 sm:space-y-6">
-
-            <!-- ADMIN EXECUTIVE CONTROL HEADER -->
-            <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
-                <div>
-                    <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
-                    <p class="text-xs text-green-100">Manage Upazila Units, Events, HR Delegation & Dynamic Forms</p>
-                </div>
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
-                        <i class="fa-solid fa-key"></i> Master Access Sheet
-                    </button>
-                    <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-plus"></i> Create Event + Form
-                    </button>
-                </div>
-            </div>
-
-            <!-- UPAZILA DIRECTORY FILTER -->
-            <div id="upazilaFilterContainer" class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm hidden">
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Upazila Directory View:</label>
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                    <button onclick="filterUpazila('all')" class="upazila-btn p-2 border rounded-lg bg-vbdGreen text-white font-bold" data-unit="all">All Units</button>
-                    <button onclick="filterUpazila('Dhaka South City')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dhaka South City">Dhaka South</button>
-                    <button onclick="filterUpazila('Keraniganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Keraniganj">Keraniganj</button>
-                    <button onclick="filterUpazila('Dohar')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dohar">Dohar</button>
-                    <button onclick="filterUpazila('Nababganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Nababganj">Nababganj</button>
-                </div>
-            </div>
-
-            <!-- VOLUNTEER STATS CARD -->
-            <div id="volunteerStatsCard" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 hidden">
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Attended Events</p>
-                    <p id="statAttended" class="text-xl sm:text-2xl font-bold text-vbdGreen">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Late Check-ins</p>
-                    <p id="statLate" class="text-xl sm:text-2xl font-bold text-vbdYellow">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Missed Events</p>
-                    <p id="statMissed" class="text-xl sm:text-2xl font-bold text-vbdRed">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Volunteer Hours</p>
-                    <p id="statHours" class="text-xl sm:text-2xl font-bold text-gray-800">0h</p>
-                </div>
-            </div>
-
-            <!-- EVENTS SECTION -->
-            <div>
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & HR Proximity Check-In</h3>
-                    <span class="text-[10px] sm:text-xs text-gray-500">Live Location Proximity</span>
-                </div>
-                <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                    <!-- Dynamic Events Rendered Here -->
-                </div>
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- CREATE/EDIT EVENT MODAL WITH HR PROXIMITY RADIUS & DELEGATION -->
-    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Create Event & HR Delegation Setup</h3>
-                <button onclick="closeModal('eventModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <form onsubmit="saveEvent(event)" class="space-y-4">
-                <input type="hidden" id="editingEventId">
-
-                <!-- Basic Event Details -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
-                        <input type="text" id="evTitle" required placeholder="e.g. Tree Plantation Campaign 2026" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila *</label>
-                        <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                            <option value="Dhaka South City">Dhaka South City</option>
-                            <option value="Keraniganj">Keraniganj</option>
-                            <option value="Dohar">Dohar</option>
-                            <option value="Nababganj">Nababganj</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
-                        <input type="text" id="evVenue" required placeholder="e.g. Bahadur Shah Park" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                    </div>
-                </div>
-
-                <!-- HR PROXIMITY RADIUS & DELEGATED LEAD -->
-                <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border space-y-3">
-                    <h4 class="text-xs font-bold text-vbdGreen uppercase flex items-center gap-1.5">
-                        <i class="fa-solid fa-street-view text-vbdRed"></i> HR Proximity & Power Delegation Rules
-                    </h4>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Proximity Range / Distance Limit *</label>
-                            <select id="evRadius" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
-                                <option value="20">20 Meters (Very Close Venue)</option>
-                                <option value="50" selected>50 Meters (Standard Venue Proximity)</option>
-                                <option value="100">100 Meters (Large Campus/Park Area)</option>
-                                <option value="200">200 Meters (Wide Open Field Area)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Assigned In-Charge / HR Lead *</label>
-                            <input type="text" id="evLead" required value="Sabbir Ahmed (HR Lead)" placeholder="Name of Lead or Representative" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-circle-info mr-1"></i> If the assigned HR Lead is absent, they can forward/delegate location power to any active team member at the venue.</p>
-                </div>
-
-                <!-- INTEGRATED ADVANCED FORM BUILDER -->
-                <div class="bg-gradient-to-r from-red-50 to-green-50 p-3 sm:p-4 rounded-xl border border-gray-200 space-y-3">
-                    <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-                        <h4 class="font-bold text-xs sm:text-sm text-gray-800"><i class="fa-solid fa-wpforms text-vbdGreen mr-1"></i> Form Setup</h4>
-                        <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Custom Questions</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Form Description</label>
-                        <textarea id="formDescription" rows="2" placeholder="Form description..." class="w-full border rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen"></textarea>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="block text-xs font-semibold text-gray-700 uppercase">Custom Fields</label>
-                            <button type="button" onclick="addCustomField()" class="text-xs bg-vbdGreen text-white px-2 py-1 rounded-lg font-bold"><i class="fa-solid fa-plus"></i> Add Question</button>
-                        </div>
-                        <div id="customQuestionsContainer" class="space-y-2">
-                            <!-- Custom fields added dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Save Event</button>
-                </div>
-            </form>
-        </div>
+      )}
     </div>
-
-    <!-- DELEGATE POWER MODAL (HR FORWARD POWER TO TEAM MEMBER) -->
-    <div id="delegateModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-share-nodes text-vbdRed"></i> Delegate Location Power
-                </h3>
-                <button onclick="closeModal('delegateModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <form onsubmit="confirmDelegation(event)" class="space-y-3">
-                <input type="hidden" id="delegateEventId">
-                
-                <p class="text-xs text-gray-600">If HR is unable to arrive on time, select/enter the team member present at the venue to act as the Location Beacon Lead:</p>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Delegate Lead Name / Email *</label>
-                    <input type="text" id="delegateName" required placeholder="e.g. Tanvir Hossain (Co-lead)" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('delegateModal')" class="w-1/2 py-2 border rounded-xl font-medium text-xs text-gray-600">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700">Forward Power</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- PUBLIC / VOLUNTEER CUSTOM REGISTRATION FORM MODAL -->
-    <div id="publicRegisterModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 my-6 overflow-hidden relative">
-            
-            <div class="bg-gradient-to-r from-vbdRed via-vbdGreen to-vbdDarkGreen p-4 text-white -m-4 sm:-m-6 mb-4 rounded-t-2xl">
-                <h3 id="publicFormTitle" class="font-bold text-base sm:text-xl">Registration Form</h3>
-                <p id="publicFormDesc" class="text-xs text-gray-100 mt-1"></p>
-            </div>
-
-            <form onsubmit="submitVolunteerRegistration(event)" class="space-y-3 pt-2">
-                <input type="hidden" id="registerEventId">
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Full Name *</label>
-                    <input type="text" id="regName" required placeholder="e.g. Shakil Hossain" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Phone Number *</label>
-                        <input type="tel" id="regPhone" required placeholder="017xxxxxxxx" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Blood Group</label>
-                        <select id="regBlood" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                            <option value="A+">A+</option>
-                            <option value="B+">B+</option>
-                            <option value="O+">O+</option>
-                            <option value="AB+">AB+</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="dynamicFormFields" class="space-y-2 border-t pt-2">
-                    <!-- Custom Created Questions Render Here -->
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('publicRegisterModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Submit Registration</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- REGISTERED VOLUNTEERS LIST MODAL -->
-    <div id="registeredListModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Registered Volunteers</h3>
-                <button onclick="closeModal('registeredListModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div id="registeredListContent" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                <!-- Volunteers List Rendered Here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- MASTER ACCESS SHEET MODAL (RESTORED EXACTLY AS SCREENSHOT) -->
-    <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] flex flex-col relative">
-            
-            <!-- Modal Header -->
-            <div class="flex justify-between items-start border-b pb-3">
-                <div>
-                    <h3 class="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
-                        <span class="text-vbdYellow"><i class="fa-solid fa-key"></i></span>
-                        Master Access Sheet (Annual Permission Control)
-                    </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Update Gmail IDs to transfer admin roles yearly without losing history</p>
-                </div>
-                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600 p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <!-- Active Board Tenure Bar -->
-            <div class="bg-gray-50 border rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div class="flex items-center space-x-2 text-xs">
-                    <span class="font-bold text-gray-700">Active Board Tenure Year:</span>
-                    <select id="boardTenureYear" class="border rounded-lg px-2.5 py-1 text-xs font-bold text-vbdGreen bg-white outline-none focus:ring-1 focus:ring-vbdGreen">
-                        <option value="2026">2026 Session</option>
-                        <option value="2027">2027 Session</option>
-                        <option value="2028">2028 Session</option>
-                    </select>
-                </div>
-                <div class="text-[11px] text-vbdGreen font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved"></i> Emails get auto-access links via Gmail
-                </div>
-            </div>
-
-            <!-- Scrollable Content Section -->
-            <div class="flex-1 overflow-y-auto space-y-4 pr-1 modal-scroll">
-
-                <!-- 1. District Board Member Access (6 Positions) -->
-                <div class="border border-red-200 bg-red-50/40 rounded-2xl p-4 space-y-3">
-                    <h4 class="font-bold text-vbdRed text-xs sm:text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-crown text-xs"></i> District Board Member Access (6 Positions)
-                    </h4>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Vice President Email</label>
-                            <input type="email" value="vp.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">General Secretary Email</label>
-                            <input type="email" value="gs.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">HR Secretary Email</label>
-                            <input type="email" value="hr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">PR Secretary Email</label>
-                            <input type="email" value="pr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Finance Secretary Email</label>
-                            <input type="email" value="finance.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Logistics Secretary Email</label>
-                            <input type="email" value="logistics.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Upazila Board Members Access (5 Positions per Upazila) -->
-                <div class="space-y-3">
-                    <h4 class="font-bold text-vbdGreen text-xs sm:text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-building-flag text-xs"></i> Upazila Board Members Access (5 Positions per Upazila)
-                    </h4>
-
-                    <!-- 1. Dhaka South City Corporation Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">1. Dhaka South City Corporation Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Keraniganj Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">2. Keraniganj Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Dohar Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">3. Dohar Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4. Nababganj Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">4. Nababganj Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Footer Action Buttons -->
-            <div class="pt-3 border-t flex justify-end gap-2">
-                <button type="button" onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button type="button" onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700 flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Save & Send Access Mails
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-        // SYSTEM DATA STATE
-        let currentUser = null;
-        let activeUpazilaFilter = 'all';
-
-        let events = [
-            {
-                id: 'ev_1',
-                title: 'Clean Dhaka Campaign 2026',
-                upazila: 'Dhaka South City',
-                venue: 'Bahadur Shah Park',
-                radius: 50, // Meters
-                activeLead: 'Sabbir Ahmed (HR Lead)',
-                leadLocationLat: null, // Set dynamically when HR activates beacon
-                leadLocationLng: null,
-                isBeaconActive: false,
-                formDesc: 'Join us to make Old Dhaka clean and sustainable!',
-                customFields: ['Institute Name', 'T-Shirt Size'],
-                registeredVolunteers: [
-                    { name: 'Tanvir Hossain', phone: '01711002233', blood: 'O+', customAnswers: { 'Institute Name': 'DU', 'T-Shirt Size': 'L' } }
-                ],
-                checkedInUsers: [],
-                checkedOutUsers: []
-            }
-        ];
-
-        // USER LOGIN SIMULATION
-        function loginAs(role) {
-            if (role === 'district_president') {
-                currentUser = { name: 'District President', role: 'district_president', designation: 'President (District Board)', upazila: 'Dhaka South Central' };
-            } else if (role === 'hr_lead') {
-                currentUser = { name: 'Sabbir Ahmed (HR Lead)', role: 'hr_lead', designation: 'HR Secretary / In-Charge', upazila: 'Dhaka South City' };
-            } else {
-                currentUser = { name: 'Tanvir Hossain', role: 'general_volunteer', designation: 'General Member', upazila: 'Dhaka South City', stats: { attended: 4, late: 1, missed: 0, hours: 12 } };
-            }
-
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            document.getElementById('navUserMenu').classList.remove('hidden');
-            
-            document.getElementById('navUserName').innerText = currentUser.name;
-            document.getElementById('navUserRole').innerText = currentUser.designation;
-
-            setupDashboardLayout();
-            renderEvents();
-        }
-
-        function setupDashboardLayout() {
-            const adminHeader = document.getElementById('adminActionHeader');
-            const upazilaFilter = document.getElementById('upazilaFilterContainer');
-            const volStats = document.getElementById('volunteerStatsCard');
-            const btnMaster = document.getElementById('btnMasterAccess');
-
-            if (currentUser.role === 'district_president') {
-                adminHeader.classList.remove('hidden');
-                upazilaFilter.classList.remove('hidden');
-                volStats.classList.add('hidden');
-                btnMaster.classList.remove('hidden');
-            } else if (currentUser.role === 'hr_lead') {
-                adminHeader.classList.remove('hidden');
-                upazilaFilter.classList.add('hidden');
-                volStats.classList.add('hidden');
-                btnMaster.classList.add('hidden');
-            } else {
-                adminHeader.classList.add('hidden');
-                upazilaFilter.classList.add('hidden');
-                volStats.classList.remove('hidden');
-                btnMaster.classList.add('hidden');
-
-                document.getElementById('statAttended').innerText = currentUser.stats.attended;
-                document.getElementById('statLate').innerText = currentUser.stats.late;
-                document.getElementById('statMissed').innerText = currentUser.stats.missed;
-                document.getElementById('statHours').innerText = currentUser.stats.hours + 'h';
-            }
-        }
-
-        // RENDER EVENTS WITH HR PROXIMITY LOGIC
-        function renderEvents() {
-            const container = document.getElementById('eventsContainer');
-            container.innerHTML = '';
-
-            const filteredEvents = events.filter(ev => {
-                if (currentUser.role === 'hr_lead') return true;
-                if (activeUpazilaFilter === 'all') return true;
-                return ev.upazila === activeUpazilaFilter;
-            });
-
-            filteredEvents.forEach(ev => {
-                const isRegistered = ev.registeredVolunteers.some(v => v.name === currentUser.name);
-                const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
-                const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
-
-                const isAssignedLead = currentUser.name === ev.activeLead;
-                const canManage = (currentUser.role === 'district_president') || isAssignedLead;
-
-                container.innerHTML += `
-                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
-                        ${canManage ? `
-                            <div class="absolute top-3 right-3 flex gap-1">
-                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-md hover:bg-green-100 font-bold"><i class="fa-solid fa-users mr-1"></i> Responses (${ev.registeredVolunteers.length})</button>
-                                <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
-                                <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
-                            </div>
-                        ` : ''}
-
-                        <div>
-                            <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
-                            <h4 class="font-bold text-gray-800 text-sm sm:text-base mt-1">${ev.title}</h4>
-                            <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
-                        </div>
-
-                        <!-- HR PROXIMITY & BEACON CONTROL PANEL -->
-                        <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-2">
-                            <div class="flex justify-between items-center text-[10px] sm:text-[11px] text-gray-600 border-b pb-1">
-                                <span>Venue Host: <b class="text-vbdGreen">${ev.activeLead}</b></span>
-                                <span>Radius: <b class="text-vbdRed">${ev.radius} Meters</b></span>
-                            </div>
-
-                            <!-- HR/LEAD BEACON ACTIVATION -->
-                            ${isAssignedLead || currentUser.role === 'district_president' ? `
-                                <div class="space-y-1.5">
-                                    ${!ev.isBeaconActive ? `
-                                        <button onclick="activateHrBeacon('${ev.id}')" class="w-full py-2 bg-vbdRed text-white font-bold rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1.5">
-                                            <i class="fa-solid fa-tower-cell animate-pulse"></i> I am at Venue (Activate Check-in Pin)
-                                        </button>
-                                    ` : `
-                                        <div class="bg-green-100 text-vbdGreen p-2 rounded-lg text-center font-bold text-xs flex justify-between items-center">
-                                            <span><i class="fa-solid fa-circle-check text-vbdGreen mr-1"></i> HR Beacon Active</span>
-                                            <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Live Location Pin</span>
-                                        </div>
-                                    `}
-                                    <button onclick="openDelegateModal('${ev.id}')" class="w-full py-1.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 text-[11px] flex items-center justify-center gap-1">
-                                        <i class="fa-solid fa-share-nodes text-vbdRed"></i> Forward Location Power to Someone Else
-                                    </button>
-                                </div>
-                            ` : ''}
-
-                            <!-- VOLUNTEER PROXIMITY CHECK-IN BUTTON -->
-                            ${!isCheckedIn ? `
-                                <button onclick="triggerProximityCheckIn('${ev.id}')" class="w-full py-2 ${ev.isBeaconActive ? 'bg-vbdGreen hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-bold rounded-lg transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-location-crosshairs"></i> Check-In (Must be within ${ev.radius}m of HR)
-                                </button>
-                                ${!ev.isBeaconActive ? `<p class="text-[9px] text-center text-vbdRed font-medium">* Waiting for HR or In-Charge to reach venue & activate pin</p>` : ''}
-                            ` : !isCheckedOut ? `
-                                <div class="space-y-1">
-                                    <div class="bg-green-100 text-vbdGreen p-1.5 rounded text-center font-bold text-[11px]">
-                                        <i class="fa-solid fa-circle-check"></i> Attendance Marked
-                                    </div>
-                                    <button onclick="triggerCheckOut('${ev.id}')" class="w-full py-2 bg-vbdRed text-white font-bold rounded-lg hover:bg-red-700 transition">
-                                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Check-Out (End Duty)
-                                    </button>
-                                </div>
-                            ` : `
-                                <div class="bg-gray-200 text-gray-700 p-2 rounded text-center font-bold">
-                                    <i class="fa-solid fa-flag-checkered mr-1"></i> Attendance Completed
-                                </div>
-                            `}
-                        </div>
-
-                        <!-- PUBLIC REGISTRATION BUTTON -->
-                        <div class="pt-1">
-                            ${!isRegistered ? `
-                                <button onclick="openRegistrationModal('${ev.id}')" class="w-full py-2 border border-vbdGreen text-vbdGreen font-bold rounded-xl text-xs hover:bg-green-50">
-                                    <i class="fa-solid fa-wpforms mr-1"></i> Fill Form & Register
-                                </button>
-                            ` : `
-                                <button disabled class="w-full py-2 bg-gray-100 text-gray-400 font-bold rounded-xl text-xs">Registered for Event</button>
-                            `}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // HR ACTIVATES BEACON (BROADCASTS GPS LOCATION)
-        function activateHrBeacon(eventId) {
-            if (!navigator.geolocation) {
-                alert("GPS Geolocation is required on your mobile device.");
-                return;
-            }
-
-            const ev = events.find(e => e.id === eventId);
-
-            navigator.geolocation.getCurrentPosition((pos) => {
-                ev.leadLocationLat = pos.coords.latitude;
-                ev.leadLocationLng = pos.coords.longitude;
-                ev.isBeaconActive = true;
-
-                alert(`Venue Pin Activated successfully!\nVolunteers can now check-in if they are within ${ev.radius} meters of your location.`);
-                renderEvents();
-            }, () => {
-                alert("Please enable mobile GPS location permissions to activate venue beacon.");
-            });
-        }
-
-        // DELEGATE/FORWARD POWER TO OTHER MEMBER
-        function openDelegateModal(eventId) {
-            document.getElementById('delegateEventId').value = eventId;
-            document.getElementById('delegateModal').classList.remove('hidden');
-        }
-
-        function confirmDelegation(e) {
-            e.preventDefault();
-            const eventId = document.getElementById('delegateEventId').value;
-            const newLead = document.getElementById('delegateName').value;
-            const ev = events.find(e => e.id === eventId);
-
-            ev.activeLead = newLead;
-            ev.isBeaconActive = false; // Requires new lead to press activate on their phone
-            ev.leadLocationLat = null;
-            ev.leadLocationLng = null;
-
-            closeModal('delegateModal');
-            alert(`Location Power Forwarded to ${newLead}.\nThey can now activate venue check-in pin when they reach the event.`);
-            renderEvents();
-        }
-
-        // VOLUNTEER PROXIMITY CHECK-IN LOGIC
-        function triggerProximityCheckIn(eventId) {
-            const ev = events.find(e => e.id === eventId);
-
-            if (!ev.isBeaconActive) {
-                alert("Check-in is currently inactive. The HR Lead or In-charge has not activated the venue pin yet.");
-                return;
-            }
-
-            if (!navigator.geolocation) {
-                alert("GPS Geolocation is required on your mobile device.");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const userLat = pos.coords.latitude;
-                const userLng = pos.coords.longitude;
-
-                const distance = getDistanceFromLatLonInMeters(userLat, userLng, ev.leadLocationLat, ev.leadLocationLng);
-
-                if (distance <= ev.radius) {
-                    if (!ev.checkedInUsers.includes(currentUser.name)) {
-                        ev.checkedInUsers.push(currentUser.name);
-                    }
-                    alert(`Check-In Successful!\nYou are within ${Math.round(distance)} meters of HR / Venue Lead (${ev.activeLead}).`);
-                    renderEvents();
-                } else {
-                    alert(`Check-In Failed!\nYou are ${Math.round(distance)} meters away from HR / Lead. You must be within ${ev.radius} meters of the HR Lead at the venue.`);
-                }
-            }, () => {
-                alert("Please enable GPS on your mobile device to verify proximity.");
-            });
-        }
-
-        function triggerCheckOut(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            if (!ev.checkedOutUsers.includes(currentUser.name)) {
-                ev.checkedOutUsers.push(currentUser.name);
-            }
-            alert("Check-out Successful! Thank you for your volunteer service.");
-            renderEvents();
-        }
-
-        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * (Math.PI/180);
-            const dLon = (lon2 - lon1) * (Math.PI/180);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2); 
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        // CUSTOM FORM FIELD BUILDER
-        function addCustomField() {
-            const container = document.getElementById('customQuestionsContainer');
-            const id = Date.now();
-            container.innerHTML += `
-                <div id="field_${id}" class="flex gap-2 items-center">
-                    <input type="text" placeholder="Question Title (e.g. Institute Name)" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
-                    <button type="button" onclick="document.getElementById('field_${id}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `;
-        }
-
-        // FORM SUBMISSION & PUBLIC REGISTRATION
-        function openRegistrationModal(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            document.getElementById('registerEventId').value = ev.id;
-            document.getElementById('publicFormTitle').innerText = ev.title;
-            document.getElementById('publicFormDesc').innerText = ev.formDesc || 'Fill out the form to confirm registration.';
-
-            const container = document.getElementById('dynamicFormFields');
-            container.innerHTML = '';
-            
-            ev.customFields.forEach(q => {
-                container.innerHTML += `
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">${q}</label>
-                        <input type="text" required data-question="${q}" class="custom-answer-input w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                    </div>
-                `;
-            });
-
-            document.getElementById('publicRegisterModal').classList.remove('hidden');
-        }
-
-        function submitVolunteerRegistration(e) {
-            e.preventDefault();
-            const eventId = document.getElementById('registerEventId').value;
-            const ev = events.find(e => e.id === eventId);
-
-            const name = document.getElementById('regName').value;
-            const phone = document.getElementById('regPhone').value;
-            const blood = document.getElementById('regBlood').value;
-
-            const answers = {};
-            document.querySelectorAll('.custom-answer-input').forEach(inp => {
-                answers[inp.dataset.question] = inp.value;
-            });
-
-            ev.registeredVolunteers.push({ name, phone, blood, customAnswers: answers });
-
-            closeModal('publicRegisterModal');
-            renderEvents();
-            alert("Registration successful! Your response has been saved.");
-        }
-
-        function viewRegisteredList(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            document.getElementById('regModalTitle').innerText = `Registrations: ${ev.title}`;
-            const container = document.getElementById('registeredListContent');
-            container.innerHTML = '';
-
-            if (ev.registeredVolunteers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registration responses yet.</p>`;
-            } else {
-                ev.registeredVolunteers.forEach((v, i) => {
-                    container.innerHTML += `
-                        <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-1">
-                            <div class="flex justify-between font-bold text-gray-800">
-                                <span>${i + 1}. ${v.name} (${v.blood})</span>
-                                <span class="text-vbdGreen">${v.phone}</span>
-                            </div>
-                            <div class="text-gray-500 text-[11px]">
-                                ${Object.entries(v.customAnswers).map(([q, a]) => `<span><b>${q}:</b>${a}</span> `).join('| ')}
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            document.getElementById('registeredListModal').classList.remove('hidden');
-        }
-
-        function saveEvent(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editingEventId').value;
-            const title = document.getElementById('evTitle').value;
-            const upazila = document.getElementById('evUpazila').value;
-            const venue = document.getElementById('evVenue').value;
-            const radius = parseInt(document.getElementById('evRadius').value);
-            const activeLead = document.getElementById('evLead').value;
-            const formDesc = document.getElementById('formDescription').value;
-
-            const customFields = [];
-            document.querySelectorAll('.custom-q-input').forEach(inp => {
-                if (inp.value.trim() !== '') customFields.push(inp.value.trim());
-            });
-
-            if (editId) {
-                const ev = events.find(e => e.id === editId);
-                ev.title = title; ev.upazila = upazila; ev.venue = venue;
-                ev.radius = radius; ev.activeLead = activeLead;
-                ev.formDesc = formDesc; ev.customFields = customFields;
-            } else {
-                events.unshift({
-                    id: 'ev_' + Date.now(),
-                    title, upazila, venue, radius, activeLead,
-                    leadLocationLat: null, leadLocationLng: null, isBeaconActive: false,
-                    formDesc, customFields,
-                    registeredVolunteers: [], checkedInUsers: [], checkedOutUsers: []
-                });
-            }
-
-            closeModal('eventModal');
-            renderEvents();
-        }
-
-        function openCreateEventModal() {
-            document.getElementById('editingEventId').value = '';
-            document.getElementById('modalTitle').innerText = "Create Event & HR Delegation Setup";
-            document.getElementById('customQuestionsContainer').innerHTML = '';
-            document.getElementById('eventModal').classList.remove('hidden');
-        }
-
-        function editEvent(id) {
-            const ev = events.find(e => e.id === id);
-            document.getElementById('editingEventId').value = ev.id;
-            document.getElementById('evTitle').value = ev.title;
-            document.getElementById('evUpazila').value = ev.upazila;
-            document.getElementById('evVenue').value = ev.venue;
-            document.getElementById('evRadius').value = ev.radius;
-            document.getElementById('evLead').value = ev.activeLead;
-            document.getElementById('formDescription').value = ev.formDesc || '';
-
-            const container = document.getElementById('customQuestionsContainer');
-            container.innerHTML = '';
-            ev.customFields.forEach(q => {
-                const qId = Date.now() + Math.random();
-                container.innerHTML += `
-                    <div id="field_${qId}" class="flex gap-2 items-center">
-                        <input type="text" value="${q}" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
-                        <button type="button" onclick="document.getElementById('field_${qId}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-            });
-
-            document.getElementById('eventModal').classList.remove('hidden');
-        }
-
-        function deleteEvent(id) {
-            if (confirm("Are you sure you want to delete this event?")) {
-                events = events.filter(e => e.id !== id);
-                renderEvents();
-            }
-        }
-
-        function openMasterAccessModal() {
-            document.getElementById('masterAccessModal').classList.remove('hidden');
-        }
-
-        function saveAndSendAccessEmails() {
-            alert("Master Access Emails Saved! Access links sent to respective Gmail accounts.");
-            closeModal('masterAccessModal');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function filterUpazila(unit) {
-            activeUpazilaFilter = unit;
-            document.querySelectorAll('.upazila-btn').forEach(btn => {
-                if (btn.dataset.unit === unit) {
-                    btn.className = 'upazila-btn p-2 border rounded-lg bg-vbdGreen text-white font-bold';
-                } else {
-                    btn.className = 'upazila-btn p-2 border rounded-lg bg-gray-50 font-bold';
-                }
-            });
-            renderEvents();
-        }
-
-        function logout() {
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('dashboardSection').classList.add('hidden');
-            document.getElementById('navUserMenu').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
+  );
+}
