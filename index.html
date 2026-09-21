@@ -11,8 +11,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Leaflet CSS (100% Free Map Library) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Mapbox GL JS & CSS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
 
     <script>
         tailwind.config = {
@@ -33,7 +34,8 @@
     </script>
     <style>
         body { font-family: 'Hind Siliguri', sans-serif; }
-        #leafletMap { height: 300px; width: 100%; border-radius: 12px; z-index: 10; }
+        #mapboxMap { height: 320px; width: 100%; border-radius: 12px; }
+        .mapboxgl-popup { font-family: 'Hind Siliguri', sans-serif; }
         .search-suggestion-box {
             position: absolute;
             top: 100%;
@@ -42,10 +44,10 @@
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 0 0 12px 12px;
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
             z-index: 9999;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
@@ -114,7 +116,7 @@
             <div id="adminControls" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-bold">ইভেন্ট ম্যানেজমেন্ট প্যানেল</h3>
-                    <p class="text-xs text-green-100">ইন্টারেক্টিভ ফ্রি মানচিত্র সার্চ দিয়ে নতুন ইভেন্ট যুক্ত করুন</p>
+                    <p class="text-xs text-green-100">স্মার্ট ম্যাপবক্স হাই-স্পিড সার্চ দিয়ে নতুন ইভেন্ট যুক্ত করুন</p>
                 </div>
                 <button onclick="openCreateEventModal()" class="px-4 py-2.5 bg-vbdYellow text-gray-900 rounded-xl font-bold text-sm shadow hover:bg-yellow-400 transition flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle"></i> নতুন ইভেন্ট যুক্ত করুন
@@ -132,7 +134,7 @@
     <div id="createEventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 my-8">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> ইভেন্ট ভেন্যু মানচিত্র সেটআপ</h3>
+                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> ম্যাপবক্স হাই-ডিফিনিশন ভেন্যু ম্যাপ</h3>
                 <button onclick="closeCreateEventModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
@@ -145,20 +147,17 @@
                 <!-- Live Auto-Suggest Search Input -->
                 <div class="relative">
                     <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> স্থান সার্চ করুন (টাইপ করলেই সাজেশন আসবে) *
+                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> স্থান সার্চ করুন (টাইপ করলেই ড্রপডাউন আসবে) *
                     </label>
                     <div class="flex gap-2">
-                        <input type="text" id="searchInput" oninput="handleSearchTyping()" placeholder="যেমন: Jaago Foundation, Bahadur Shah Park, Dhanmondi" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                        <button type="button" onclick="performManualSearch()" class="px-4 py-2 bg-vbdGreen text-white font-bold text-xs rounded-xl hover:bg-green-700 transition">
-                            <i class="fa-solid fa-magnifying-glass"></i> খুঁজুন
-                        </button>
+                        <input type="text" id="searchInput" oninput="handleMapboxSearch()" placeholder="যেমন: Jaago, Dhanmondi 27, Star Kabab" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                     </div>
                     <!-- Auto Suggestion List -->
                     <div id="suggestionsList" class="search-suggestion-box hidden"></div>
                 </div>
 
                 <!-- Map Container -->
-                <div id="leafletMap"></div>
+                <div id="mapboxMap"></div>
 
                 <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg border">
                     <div>অক্ষাংশ (Lat): <span id="displayLat" class="font-bold text-gray-800">23.7099</span></div>
@@ -173,10 +172,10 @@
         </div>
     </div>
 
-    <!-- Leaflet JS (Open-Source Free Maps) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
+        // Mapbox Public Token
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhbXN1bGhhcTgxOCIsImEiOiJjbTlsM28yNnowMmI3MmlzN3lxc2c2Z3o0In0.XN3pE04iN7p1L3ABykC28Q';
+
         let map, marker;
         let selectedCoords = { lat: 23.7099, lng: 90.4117 };
         let selectedAddress = "বাহাদুর শাহ পার্ক, ঢাকা";
@@ -192,90 +191,88 @@
             }
         ];
 
-        function initMap() {
-            if (map) return; // Prevent re-initialization
+        function initMapbox() {
+            if (map) return;
 
-            map = L.map('leafletMap').setView([23.7099, 90.4117], 15);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            marker = L.marker([23.7099, 90.4117], { draggable: true }).addTo(map);
-
-            // Drag end listener
-            marker.on('dragend', function (e) {
-                const coord = marker.getLatLng();
-                updateCoords(coord.lat, coord.lng);
+            map = new mapboxgl.Map({
+                container: 'mapboxMap',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [90.4117, 23.7099], // [lng, lat]
+                zoom: 14
             });
 
-            // Map click listener
-            map.on('click', function (e) {
-                marker.setLatLng(e.latlng);
-                updateCoords(e.latlng.lat, e.latlng.lng);
+            // Map Controls
+            map.addControl(new mapboxgl.NavigationControl());
+
+            // Draggable Marker
+            marker = new mapboxgl.Marker({ draggable: true, color: '#E31B23' })
+                .setLngLat([90.4117, 23.7099])
+                .addTo(map);
+
+            marker.on('dragend', () => {
+                const lngLat = marker.getLngLat();
+                updateLocation(lngLat.lat, lngLat.lng);
+            });
+
+            map.on('click', (e) => {
+                marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+                updateLocation(e.lngLat.lat, e.lngLat.lng);
             });
         }
 
-        // Auto suggestion search using OpenStreetMap Nominatim API
-        function handleSearchTyping() {
+        // Mapbox Live Places Search Engine
+        function handleMapboxSearch() {
             clearTimeout(debounceTimer);
             const query = document.getElementById('searchInput').value.trim();
             const box = document.getElementById('suggestionsList');
 
-            if (query.length < 3) {
+            if (query.length < 2) {
                 box.classList.add('hidden');
                 return;
             }
 
             debounceTimer = setTimeout(() => {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=bd&limit=5`)
+                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?country=bd&access_token=${mapboxgl.accessToken}&limit=5`;
+                
+                fetch(url)
                     .then(res => res.json())
                     .then(data => {
                         box.innerHTML = '';
-                        if (data.length === 0) {
-                            box.innerHTML = `<div class="p-3 text-xs text-gray-500">কোনো স্থান পাওয়া যায়নি</div>`;
+                        if (!data.features || data.features.length === 0) {
+                            box.innerHTML = `<div class="p-3 text-xs text-gray-500">কোনো অবস্থান পাওয়া যায়নি</div>`;
                         } else {
-                            data.forEach(item => {
+                            data.features.forEach(feature => {
                                 const div = document.createElement('div');
-                                div.className = 'p-2.5 text-xs text-gray-700 hover:bg-green-50 cursor-pointer border-b border-gray-100 flex items-center gap-2';
-                                div.innerHTML = `<i class="fa-solid fa-location-dot text-vbdRed"></i> <span>${item.display_name}</span>`;
-                                div.onclick = () => selectSearchResult(item.lat, item.lon, item.display_name);
+                                div.className = 'p-3 text-xs text-gray-700 hover:bg-red-50 cursor-pointer border-b border-gray-100 flex items-start gap-2';
+                                div.innerHTML = `
+                                    <i class="fa-solid fa-location-dot text-vbdRed mt-0.5"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">${feature.text}</p>
+                                        <p class="text-[10px] text-gray-500">${feature.place_name}</p>
+                                    </div>
+                                `;
+                                div.onclick = () => {
+                                    const [lng, lat] = feature.center;
+                                    selectSearchResult(lat, lng, feature.place_name);
+                                };
                                 box.appendChild(div);
                             });
                         }
                         box.classList.remove('hidden');
                     });
-            }, 300);
+            }, 250);
         }
 
-        function performManualSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=bd&limit=1`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        selectSearchResult(data[0].lat, data[0].lon, data[0].display_name);
-                    } else {
-                        alert('স্থানটি পাওয়া যায়নি, অনুগ্রহ করে অন্য নামে চেষ্টা করুন।');
-                    }
-                });
-        }
+        function selectSearchResult(lat, lng, fullAddress) {
+            map.flyTo({ center: [lng, lat], zoom: 16 });
+            marker.setLngLat([lng, lat]);
+            updateLocation(lat, lng, fullAddress);
 
-        function selectSearchResult(lat, lon, addressName) {
-            const latitude = parseFloat(lat);
-            const longitude = parseFloat(lon);
-            
-            map.setView([latitude, longitude], 16);
-            marker.setLatLng([latitude, longitude]);
-            updateCoords(latitude, longitude, addressName);
-            
-            document.getElementById('searchInput').value = addressName.split(',')[0];
+            document.getElementById('searchInput').value = fullAddress.split(',')[0];
             document.getElementById('suggestionsList').classList.add('hidden');
         }
 
-        function updateCoords(lat, lng, address = null) {
+        function updateLocation(lat, lng, address = null) {
             selectedCoords = { lat, lng };
             document.getElementById('displayLat').innerText = lat.toFixed(5);
             document.getElementById('displayLng').innerText = lng.toFixed(5);
@@ -285,8 +282,8 @@
         function openCreateEventModal() {
             document.getElementById('createEventModal').classList.remove('hidden');
             setTimeout(() => {
-                initMap();
-                map.invalidateSize(); // Fix map render issue inside modal
+                initMapbox();
+                map.resize();
             }, 200);
         }
 
