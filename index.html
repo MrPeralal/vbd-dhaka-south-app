@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBD Dhaka South - Smart Attendance System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vbdRed: '#E31B23',
+                        vbdGreen: '#006A4E',
+                        vbdDarkGreen: '#004D38',
+                    },
+                    fontFamily: {
+                        sans: ['Hind Siliguri', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-md border-b-2 border-vbdRed sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-vbdRed flex items-center justify-center text-white font-bold text-xl shadow">
+                        VBD
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
+                        <p class="text-xs text-vbdGreen font-medium">ঢাকা দক্ষিণ জেলা প্যানেল</p>
+                    </div>
+                </div>
+                <div id="navUserMenu" class="flex items-center space-x-3 hidden">
+                    <span id="navRoleBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-vbdGreen">
+                        ভলান্টিয়ার
+                    </span>
+                    <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-vbdRed transition flex items-center gap-1">
+                        <i class="fa-solid font-bold fa-right-from-bracket"></i> লগআউট
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+        
+        <!-- Login / Auth Section -->
+        <div id="authSection" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-red-50 text-vbdRed rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">লগইন করুন</h2>
+                <p class="text-sm text-gray-500 mt-1">আপনার অ্যাকাউন্ট অ্যাক্সেস করতে ইমেইল ও পাসওয়ার্ড দিন</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">ইমেইল এড্রেস</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@vbd.org" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-vbdRed focus:border-vbdRed outline-none transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">পাসওয়ার্ড</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-vbdRed focus:border-vbdRed outline-none transition text-sm">
+                </div>
+                <button type="submit" class="w-full py-3 bg-vbdRed text-white rounded-xl font-semibold shadow-lg hover:bg-red-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> প্রবেশ করুন
+                </button>
+            </form>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-gray-400">অথবা ডেমো রোল নির্বাচন করুন</span></div>
+            </div>
+
+            <!-- Quick Demo Login Helpers -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <button onclick="demoLogin('district')" class="p-2 border border-green-300 bg-green-50 rounded-lg text-vbdGreen font-medium hover:bg-green-100 transition">
+                    <i class="fa-solid fa-crown block text-center mb-1 text-sm"></i> ডিস্ট্রিক্ট বোর্ড
+                </button>
+                <button onclick="demoLogin('upazila')" class="p-2 border border-blue-300 bg-blue-50 text-blue-700 rounded-lg font-medium hover:bg-blue-100 transition">
+                    <i class="fa-solid fa-building-user block text-center mb-1 text-sm"></i> উপজেলা বোর্ড
+                </button>
+                <button onclick="demoLogin('volunteer')" class="col-span-2 p-2 border border-gray-300 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition">
+                    <i class="fa-solid fa-user-check block text-center mb-1 text-sm"></i> ভলান্টিয়ার টেস্ট
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section (Hidden by Default) -->
+        <div id="dashboardSection" class="hidden space-y-6">
+            
+            <!-- User Info Bar -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div id="userAvatar" class="w-12 h-12 bg-vbdGreen text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">
+                        A
+                    </div>
+                    <div>
+                        <h2 id="userNameDisplay" class="font-bold text-xl text-gray-800">স্বাগতম, ব্যবহারকারী</h2>
+                        <p id="userRoleDetail" class="text-xs text-gray-500">ভলান্টিয়ার • ঢাকা দক্ষিণ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="currentGPSBadge" class="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 border">
+                        <i class="fa-solid fa-location-dot text-vbdRed"></i> জিপিএস সিঙ্ক হচ্ছে...
+                    </span>
+                </div>
+            </div>
+
+            <!-- Admin Controls Header (Only for Admin Roles) -->
+            <div id="adminControls" class="hidden bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold">এডমিন কন্ট্রোল প্যানেল</h3>
+                    <p class="text-xs text-green-100 opacity-90">ইভেন্ট তৈরি ও জিপিএস জিওফেন্স ম্যানেজ করুন</p>
+                </div>
+                <button onclick="openCreateEventModal()" class="px-4 py-2.5 bg-white text-vbdGreen rounded-xl font-semibold text-sm shadow hover:bg-gray-100 transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> নতুন ইভেন্ট তৈরি করুন
+                </button>
+            </div>
+
+            <!-- Events List Section -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <i class="fa-regular fa-calendar-check text-vbdRed"></i> চলতি ও আসন্ন ইভেন্টসমূহ
+                </h3>
+                <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Events will load dynamically -->
+                </div>
+            </div>
+
+            <!-- Attendance Records Table (Admin / Board View) -->
+            <div id="attendanceLogsSection" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mt-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">উপস্থিতির রেকর্ড</h3>
+                        <p class="text-xs text-gray-500">সকল ভলান্টিয়ারদের রিয়েল-টাইম জিপিএস চেক-ইন লগ</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="filterUpazila" onchange="renderAttendanceLogs()" class="text-xs border rounded-lg px-2.5 py-1.5 outline-none">
+                            <option value="all">সকল উপজেলা</option>
+                            <option value="Dhaka South">ঢাকা দক্ষিণ</option>
+                            <option value="Keraniganj">কেরানীগঞ্জ</option>
+                            <option value="Dohar">দোহার</option>
+                            <option value="Nawabganj">নবাবগঞ্জ</option>
+                        </select>
+                        <button onclick="exportCSV()" class="text-xs px-3 py-1.5 bg-vbdGreen text-white rounded-lg font-medium hover:bg-green-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-file-excel"></i> এক্সপোর্ট (CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 text-gray-600 text-xs uppercase border-b">
+                            <tr>
+                                <th class="p-3">ভলান্টিয়ার</th>
+                                <th class="p-3">উপজেলা</th>
+                                <th class="p-3">ইভেন্ট</th>
+                                <th class="p-3">সময়</th>
+                                <th class="p-3">দূরত্ব (ভেন্যু থেকে)</th>
+                                <th class="p-3">স্ট্যাটাস</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="divide-y divide-gray-100">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-gray-800 text-lg">নতুন ইভেন্ট যোগ করুন</h3>
+                <button onclick="closeCreateEventModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form onsubmit="saveNewEvent(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">ইভেন্টের নাম</label>
+                    <input type="text" id="evName" required placeholder="যেমন: বৃক্ষরোপণ কর্মসূচি ২০২৬" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">উপজেলা নির্বাচন</label>
+                    <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <option value="Dhaka South">ঢাকা দক্ষিণ</option>
+                        <option value="Keraniganj">কেরানীগঞ্জ</option>
+                        <option value="Dohar">দোহার</option>
+                        <option value="Nawabganj">নবাবগঞ্জ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">ভেন্যুর নাম</label>
+                    <input type="text" id="evVenue" required placeholder="যেমন: বাহাদুর শাহ পার্ক, ঢাকা" class="w-full border rounded-xl px-3 py-2 text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">অক্ষাংশ (Lat)</label>
+                        <input type="number" step="any" id="evLat" required placeholder="23.7099" class="w-full border rounded-xl px-3 py-2 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">দ্রাঘিমাংশ (Long)</label>
+                        <input type="number" step="any" id="evLng" required placeholder="90.4117" class="w-full border rounded-xl px-3 py-2 text-sm outline-none">
+                    </div>
+                </div>
+                <button type="button" onclick="fillCurrentLocationForEvent()" class="text-xs text-vbdGreen font-semibold hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-crosshairs"></i> আমার বর্তমান লোকেশন কোঅর্ডিনেট ব্যবহার করুন
+                </button>
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeCreateEventModal()" class="w-1/2 py-2 border rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50">বাতিল</button>
+                    <button type="submit" class="w-1/2 py-2 bg-vbdGreen text-white rounded-xl font-semibold text-sm shadow hover:bg-green-700">সংরক্ষণ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration & Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your Firebase Web Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDe7FRqB7EDEspGSSwbDlXElc3hVJJgPkk",
+            authDomain: "vbd-dhaka-south.firebaseapp.com",
+            projectId: "vbd-dhaka-south",
+            storageBucket: "vbd-dhaka-south.firebasestorage.app",
+            messagingSenderId: "974020826390",
+            appId: "1:974020826390:web:e9b630a0f68de43183ac37",
+            measurementId: "G-RZ23YXM48B"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global State Management
+        window.currentUser = null;
+        window.currentGPS = { lat: null, lng: null };
+
+        // Sample Initial In-Memory Events
+        window.eventsList = [
+            {
+                id: 'ev_1',
+                title: 'প্লাস্টিক ক্লিনিং ড্রাইভ',
+                upazila: 'Dhaka South',
+                venue: 'ধানমন্ডি লেক, ঢাকা',
+                lat: 23.7461,
+                lng: 90.3742,
+                radius: 50, // Meters
+                status: 'active'
+            },
+            {
+                id: 'ev_2',
+                title: 'রক্তদান শিবির ও স্বাস্থ্য সেবা',
+                upazila: 'Keraniganj',
+                venue: 'কেরানীগঞ্জ উপজেলা চত্বর',
+                lat: 23.6822,
+                lng: 90.3163,
+                radius: 50,
+                status: 'active'
+            }
+        ];
+
+        window.attendanceLogs = [
+            {
+                userName: 'আব্দুল্লাহ আল মামুন',
+                upazila: 'Dhaka South',
+                eventTitle: 'প্লাস্টিক ক্লিনিং ড্রাইভ',
+                time: '১০:১৫ AM',
+                distance: '১২ মিটার',
+                status: 'Verified (In-Geofence)'
+            }
+        ];
+
+        // Start GPS Watching
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    window.currentGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('currentGPSBadge').innerHTML = `
+                        <i class="fa-solid fa-circle text-xs text-green-500 animate-pulse"></i> GPS সক্রিয় (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})
+                    `;
+                },
+                (err) => {
+                    document.getElementById('currentGPSBadge').innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation text-vbdRed"></i> GPS সিঙ্ক ব্যর্থ
+                    `;
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        // Haversine Distance Formula (In Meters)
+        window.calculateDistance = function(lat1, lon1, lat2, lon2) {
+            if (!lat1 || !lon1 || !lat2 || !lon2) return 999999;
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // In meters
+        };
+
+        // Handle Login
+        window.handleLogin = function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            // Simulated login based on email
+            let role = 'volunteer';
+            let name = 'ভলান্টিয়ার সদস্য';
+
+            if(email.includes('district') || email.includes('admin')) {
+                role = 'district_admin';
+                name = 'জেলা অ্যাডমিন (ঢাকা দক্ষিণ)';
+            } else if(email.includes('upazila')) {
+                role = 'upazila_admin';
+                name = 'উপজেলা অ্যাডমিন';
+            }
+
+            setUserSession({ name, email, role, upazila: 'Dhaka South' });
+        };
+
+        window.demoLogin = function(role) {
+            if(role === 'district') {
+                setUserSession({ name: 'ফজলে রাব্বি (ডিস্ট্রিক্ট বোর্ড)', email: 'district@vbd.org', role: 'district_admin', upazila: 'Dhaka South' });
+            } else if(role === 'upazila') {
+                setUserSession({ name: 'আরিফ হোসেন (উপজেলা বোর্ড)', email: 'upazila@vbd.org', role: 'upazila_admin', upazila: 'Keraniganj' });
+            } else {
+                setUserSession({ name: 'মো: রাকিব (ভলান্টিয়ার)', email: 'rakib@vbd.org', role: 'volunteer', upazila: 'Dhaka South' });
+            }
+        };
+
+        function setUserSession(user) {
+            window.currentUser = user;
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('navUserMenu').classList.remove('hidden');
+
+            document.getElementById('userNameDisplay').innerText = user.name;
+            document.getElementById('userAvatar').innerText = user.name.charAt(0);
+            
+            const roleBadge = document.getElementById('navRoleBadge');
+            if(user.role === 'district_admin') {
+                roleBadge.innerText = 'ডিস্ট্রিক্ট বোর্ড';
+                roleBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-vbdRed';
+                document.getElementById('adminControls').classList.remove('hidden');
+            } else if(user.role === 'upazila_admin') {
+                roleBadge.innerText = `উপজেলা বোর্ড (${user.upazila})`;
+                roleBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700';
+                document.getElementById('adminControls').classList.remove('hidden');
+            } else {
+                roleBadge.innerText = 'ভলান্টিয়ার';
+                roleBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-vbdGreen';
+                document.getElementById('adminControls').classList.add('hidden');
+            }
+
+            renderEvents();
+            renderAttendanceLogs();
+        }
+
+        window.logout = function() {
+            window.currentUser = null;
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('navUserMenu').classList.add('hidden');
+        };
+
+        // Render Events
+        window.renderEvents = function() {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '';
+
+            window.eventsList.forEach(ev => {
+                const dist = window.calculateDistance(
+                    window.currentGPS.lat, 
+                    window.currentGPS.lng, 
+                    ev.lat, 
+                    ev.lng
+                );
+
+                const isWithinGeofence = dist <= ev.radius;
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3 relative';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="px-2.5 py-0.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">${ev.upazila}</span>
+                        <span class="text-xs ${isWithinGeofence ? 'text-green-600 font-bold' : 'text-vbdRed'} flex items-center gap-1">
+                            <i class="fa-solid fa-location-crosshairs"></i> ${dist < 9999 ? Math.round(dist) + ' মি দূরে' : 'জিপিএস খোঁজা হচ্ছে'}
+                        </span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-base">${ev.title}</h4>
+                    <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
+
+                    <button onclick="checkInToEvent('${ev.id}')" 
+                        class="w-full py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 shadow
+                        ${isWithinGeofence 
+                            ? 'bg-vbdGreen text-white hover:bg-green-700 cursor-pointer' 
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border'}"
+                        ${!isWithinGeofence ? 'disabled' : ''}>
+                        <i class="fa-solid fa-user-check"></i> 
+                        ${isWithinGeofence ? 'উপস্থিতি নিশ্চিত করুন (Check-In)' : 'ভেন্যুর ৫০ মিটারের বাইরে'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.checkInToEvent = function(eventId) {
+            const ev = window.eventsList.find(e => e.id === eventId);
+            if(!ev) return;
+
+            const dist = window.calculateDistance(
+                window.currentGPS.lat, 
+                window.currentGPS.lng, 
+                ev.lat, 
+                ev.lng
+            );
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            window.attendanceLogs.unshift({
+                userName: window.currentUser ? window.currentUser.name : 'অজ্ঞাত সদস্য',
+                upazila: window.currentUser ? window.currentUser.upazila : 'Dhaka South',
+                eventTitle: ev.title,
+                time: timeStr,
+                distance: Math.round(dist) + ' মিটার',
+                status: 'Verified (In-Geofence)'
+            });
+
+            alert('আপনার উপস্থিতি সফলভাবে নথিভুক্ত করা হয়েছে!');
+            renderAttendanceLogs();
+        };
+
+        window.renderAttendanceLogs = function() {
+            const tbody = document.getElementById('attendanceTableBody');
+            const filter = document.getElementById('filterUpazila').value;
+            tbody.innerHTML = '';
+
+            const logs = filter === 'all' 
+                ? window.attendanceLogs 
+                : window.attendanceLogs.filter(l => l.upazila === filter);
+
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-xs text-gray-400">কোনো রেকর্ড পাওয়া যায়নি</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-gray-800">${log.userName}</td>
+                    <td class="p-3 text-xs text-gray-600">${log.upazila}</td>
+                    <td class="p-3 text-xs text-gray-600">${log.eventTitle}</td>
+                    <td class="p-3 text-xs text-gray-600">${log.time}</td>
+                    <td class="p-3 text-xs text-gray-600">${log.distance}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-vbdGreen">
+                            ${log.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // Modal Functions
+        window.openCreateEventModal = function() {
+            document.getElementById('createEventModal').classList.remove('hidden');
+        };
+
+        window.closeCreateEventModal = function() {
+            document.getElementById('createEventModal').classList.add('hidden');
+        };
+
+        window.fillCurrentLocationForEvent = function() {
+            if(window.currentGPS.lat && window.currentGPS.lng) {
+                document.getElementById('evLat').value = window.currentGPS.lat;
+                document.getElementById('evLng').value = window.currentGPS.lng;
+            } else {
+                alert('জিপিএস লোকেশন লোড হচ্ছে, অনুগ্রহ করে কয়েক সেকেন্ড পর চেষ্টা করুন।');
+            }
+        };
+
+        window.saveNewEvent = function(e) {
+            e.preventDefault();
+            const newEv = {
+                id: 'ev_' + Date.now(),
+                title: document.getElementById('evName').value,
+                upazila: document.getElementById('evUpazila').value,
+                venue: document.getElementById('evVenue').value,
+                lat: parseFloat(document.getElementById('evLat').value),
+                lng: parseFloat(document.getElementById('evLng').value),
+                radius: 50,
+                status: 'active'
+            };
+
+            window.eventsList.unshift(newEv);
+            closeCreateEventModal();
+            renderEvents();
+            alert('নতুন ইভেন্ট সফলভাবে তৈরি হয়েছে!');
+        };
+
+        window.exportCSV = function() {
+            let csv = 'Volunteer,Upazila,Event,Time,Distance,Status\n';
+            window.attendanceLogs.forEach(l => {
+                csv += `"${l.userName}","${l.upazila}","${l.eventTitle}","${l.time}","${l.distance}","${l.status}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'VBD_Attendance_Report.csv');
+            a.click();
+        };
+    </script>
+</body>
+</html>
