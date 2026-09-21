@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBD Dhaka South - Automated Enterprise Management System</title>
+    <title>VBD Dhaka South - Automated Enterprise Platform</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS & JS for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
         tailwind.config = {
@@ -23,13 +26,23 @@
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 8s ease infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        #map, #viewMap { height: 220px; width: 100%; border-radius: 0.75rem; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col">
@@ -37,25 +50,24 @@
     <!-- Top Navigation Bar -->
     <nav class="bg-white shadow-md border-b-4 border-vbdRed sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
-                <div class="flex items-center space-x-3">
-                    <img src="https://raw.githubusercontent.com/vbd-assets/logos/main/vbd-logo.png" 
-                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=VBD+Dhaka+South&background=E31B23&color=fff&size=128';" 
-                         alt="VBD Logo" class="h-12 w-auto object-contain">
+            <div class="flex justify-between h-16 sm:h-20 items-center">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <img src="https://ui-avatars.com/api/?name=VBD+Dhaka+South&background=E31B23&color=fff&size=128" 
+                         alt="VBD Logo" class="h-10 sm:h-12 w-auto object-contain">
                     <div>
-                        <h1 class="font-bold text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
-                        <p class="text-xs text-vbdGreen font-bold tracking-wide">Dhaka South District Panel</p>
+                        <h1 class="font-bold text-sm sm:text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
+                        <p class="text-[10px] sm:text-xs text-vbdGreen font-bold tracking-wide">Dhaka South District Panel</p>
                     </div>
                 </div>
                 
                 <!-- Active User Profile Bar -->
-                <div id="navUserMenu" class="flex items-center space-x-3 hidden">
-                    <div class="text-right hidden sm:block">
-                        <p id="navUserName" class="text-sm font-bold text-gray-800">User Name</p>
-                        <p id="navUserRole" class="text-[11px] text-vbdGreen font-semibold">Designation</p>
+                <div id="navUserMenu" class="flex items-center space-x-2 hidden">
+                    <div class="text-right hidden md:block">
+                        <p id="navUserName" class="text-xs sm:text-sm font-bold text-gray-800">User Name</p>
+                        <p id="navUserRole" class="text-[10px] sm:text-[11px] text-vbdGreen font-semibold">Designation</p>
                     </div>
-                    <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-vbdRed transition bg-gray-100 px-3 py-1.5 rounded-lg border">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    <button onclick="logout()" class="text-xs sm:text-sm font-medium text-gray-600 hover:text-vbdRed transition bg-gray-100 px-2.5 py-1.5 rounded-lg border">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -63,95 +75,91 @@
     </nav>
 
     <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
 
-        <!-- AUTHENTICATION / SIMULATION PANEL -->
-        <div id="authSection" class="max-w-xl mx-auto my-6 bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Select Role Prototype</h2>
-                <p class="text-xs text-gray-500 mt-1">Test system access based on VBD Hierarchy</p>
+        <!-- AUTHENTICATION / ROLE SELECTOR -->
+        <div id="authSection" class="max-w-xl mx-auto my-4 sm:my-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
+            <div class="text-center mb-5">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Select Role Prototype</h2>
+                <p class="text-xs text-gray-500 mt-1">Test system features based on VBD Hierarchy</p>
             </div>
 
             <div class="space-y-3">
                 <button onclick="loginAs('district_president')" class="w-full p-3 bg-red-50 hover:bg-red-100 text-vbdRed border border-red-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
                     <span><i class="fa-solid fa-crown mr-2"></i> District President / VP (Master Access)</span>
-                    <span class="text-[10px] bg-vbdRed text-white px-2 py-0.5 rounded">Master Admin</span>
+                    <span class="text-[9px] sm:text-[10px] bg-vbdRed text-white px-2 py-0.5 rounded">Master Admin</span>
                 </button>
 
                 <button onclick="loginAs('upazila_admin')" class="w-full p-3 bg-green-50 hover:bg-green-100 text-vbdGreen border border-green-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-building-flag mr-2"></i> Upazila Board Member (Dhanmondi/Keraniganj etc)</span>
-                    <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Upazila Admin</span>
+                    <span><i class="fa-solid fa-building-flag mr-2"></i> Upazila Board Member</span>
+                    <span class="text-[9px] sm:text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Upazila Admin</span>
                 </button>
 
                 <button onclick="loginAs('general_volunteer')" class="w-full p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
                     <span><i class="fa-solid fa-user mr-2"></i> General Volunteer / Core / IR</span>
-                    <span class="text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Basic Access</span>
+                    <span class="text-[9px] sm:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Basic Access</span>
                 </button>
             </div>
         </div>
 
         <!-- DASHBOARD CONTAINER -->
-        <div id="dashboardSection" class="hidden space-y-6">
+        <div id="dashboardSection" class="hidden space-y-4 sm:space-y-6">
 
-            <!-- EXECUTIVE ACTION HEADER -->
-            <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-md flex flex-wrap justify-between items-center gap-4 hidden">
+            <!-- ADMIN EXECUTIVE CONTROL HEADER -->
+            <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
                 <div>
-                    <h3 class="text-xl font-bold">Executive Control Center</h3>
-                    <p id="adminSubtext" class="text-xs text-green-100">Manage Upazila Units, Events, Attendance & Annual Access</p>
+                    <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
+                    <p class="text-xs text-green-100">Manage Upazila Units, Events, Interactive Map & Custom Forms</p>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <!-- Master Access Sheet Button (Only for District President/VP) -->
-                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="px-4 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center gap-1 hidden">
-                        <i class="fa-solid fa-key"></i> Master Access Sheet
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1 hidden">
+                        <i class="fa-solid fa-key"></i> Master Access
                     </button>
-                    <button onclick="openFormBuilderModal()" class="px-4 py-2 bg-white text-vbdGreen rounded-xl font-bold text-xs shadow hover:bg-gray-100 transition flex items-center gap-1">
-                        <i class="fa-solid fa-wpforms"></i> Create Form
-                    </button>
-                    <button onclick="openCreateEventModal()" class="px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center gap-1">
-                        <i class="fa-solid fa-plus"></i> Create Event
+                    <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Create Event + Form
                     </button>
                 </div>
             </div>
 
-            <!-- UPAZILA SELECTOR (Visible for District Board) -->
-            <div id="upazilaFilterContainer" class="bg-white p-4 rounded-xl border shadow-sm hidden">
+            <!-- UPAZILA DIRECTORY FILTER (Visible for District Board) -->
+            <div id="upazilaFilterContainer" class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm hidden">
                 <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Upazila Directory View:</label>
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <button onclick="filterUpazila('all')" class="upazila-btn p-2 border rounded-lg bg-vbdGreen text-white font-bold" data-unit="all">All Units</button>
-                    <button onclick="filterUpazila('Dhaka South City')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dhaka South City">Dhaka South City</button>
+                    <button onclick="filterUpazila('Dhaka South City')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dhaka South City">Dhaka South</button>
                     <button onclick="filterUpazila('Keraniganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Keraniganj">Keraniganj</button>
                     <button onclick="filterUpazila('Dohar')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dohar">Dohar</button>
                     <button onclick="filterUpazila('Nababganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Nababganj">Nababganj</button>
                 </div>
             </div>
 
-            <!-- VOLUNTEER STATS -->
-            <div id="volunteerStatsCard" class="grid grid-cols-2 md:grid-cols-4 gap-4 hidden">
-                <div class="bg-white p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-xs text-gray-500 font-medium">Attended Events</p>
-                    <p id="statAttended" class="text-2xl font-bold text-vbdGreen">0</p>
+            <!-- VOLUNTEER STATS CARD -->
+            <div id="volunteerStatsCard" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 hidden">
+                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
+                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Attended Events</p>
+                    <p id="statAttended" class="text-xl sm:text-2xl font-bold text-vbdGreen">0</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-xs text-gray-500 font-medium">Late Check-ins</p>
-                    <p id="statLate" class="text-2xl font-bold text-vbdYellow">0</p>
+                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
+                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Late Check-ins</p>
+                    <p id="statLate" class="text-xl sm:text-2xl font-bold text-vbdYellow">0</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-xs text-gray-500 font-medium">Missed Events</p>
-                    <p id="statMissed" class="text-2xl font-bold text-vbdRed">0</p>
+                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
+                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Missed Events</p>
+                    <p id="statMissed" class="text-xl sm:text-2xl font-bold text-vbdRed">0</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-xs text-gray-500 font-medium">Total Volunteer Hours</p>
-                    <p id="statHours" class="text-2xl font-bold text-gray-800">0h</p>
+                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
+                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Volunteer Hours</p>
+                    <p id="statHours" class="text-xl sm:text-2xl font-bold text-gray-800">0h</p>
                 </div>
             </div>
 
             <!-- EVENTS SECTION -->
             <div>
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Running & Upcoming Events</h3>
-                    <span class="text-xs text-gray-500">Cross-Upazila Participation Enabled</span>
+                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & Registration</h3>
+                    <span class="text-[10px] sm:text-xs text-gray-500">Cross-Unit Active</span>
                 </div>
-                <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     <!-- Dynamic Events Rendered Here -->
                 </div>
             </div>
@@ -160,153 +168,186 @@
 
     </main>
 
-    <!-- MASTER ACCESS MANAGEMENT SHEET MODAL (PRESIDENT & VP EXCLUSIVE) -->
-    <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 space-y-4 my-8 max-h-[90vh] flex flex-col">
+    <!-- CREATE/EDIT EVENT MODAL WITH MAP & INTEGRATED ADVANCED FORM BUILDER -->
+    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
-                <div>
-                    <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-key text-vbdYellow mr-1"></i> Master Access Sheet (Annual Permission Control)</h3>
-                    <p class="text-xs text-gray-500">Update Gmail IDs to transfer admin roles yearly without losing history</p>
-                </div>
-                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border text-xs">
-                <div>
-                    <label class="font-bold text-gray-700 mr-2">Active Board Tenure Year:</label>
-                    <select id="accessYear" class="border rounded-lg px-2 py-1 font-bold text-vbdGreen">
-                        <option value="2026">2026 Session</option>
-                        <option value="2027">2027 Session</option>
-                    </select>
-                </div>
-                <span class="text-gray-500 italic"><i class="fa-solid fa-shield-halved text-vbdGreen mr-1"></i> Emails get auto-access links via Gmail</span>
-            </div>
-
-            <div class="flex-1 overflow-y-auto space-y-6 pr-2">
-                <!-- DISTRICT BOARD MEMBERS (6 MEMBERS EXCEPT PRESIDENT) -->
-                <div class="bg-red-50/50 p-4 rounded-xl border border-red-100">
-                    <h4 class="font-bold text-vbdRed text-sm mb-3"><i class="fa-solid fa-crown mr-1"></i> District Board Member Access (6 Positions)</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" id="districtBoardInputs">
-                        <!-- Dynamic District Email Inputs -->
-                    </div>
-                </div>
-
-                <!-- UPAZILA BOARD MEMBERS (4 UPAZILAS) -->
-                <div class="space-y-4">
-                    <h4 class="font-bold text-vbdGreen text-sm"><i class="fa-solid fa-building-flag mr-1"></i> Upazila Board Members Access (5 Positions per Upazila)</h4>
-                    
-                    <!-- Dhaka South City -->
-                    <div class="bg-gray-50 p-4 rounded-xl border text-xs space-y-2">
-                        <p class="font-bold text-gray-800">1. Dhaka South City Corporation Board</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="upazila_dsc_inputs"></div>
-                    </div>
-
-                    <!-- Keraniganj -->
-                    <div class="bg-gray-50 p-4 rounded-xl border text-xs space-y-2">
-                        <p class="font-bold text-gray-800">2. Keraniganj Upazila Board</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="upazila_keraniganj_inputs"></div>
-                    </div>
-
-                    <!-- Dohar -->
-                    <div class="bg-gray-50 p-4 rounded-xl border text-xs space-y-2">
-                        <p class="font-bold text-gray-800">3. Dohar Upazila Board</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="upazila_dohar_inputs"></div>
-                    </div>
-
-                    <!-- Nababganj -->
-                    <div class="bg-gray-50 p-4 rounded-xl border text-xs space-y-2">
-                        <p class="font-bold text-gray-800">4. Nababganj Upazila Board</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="upazila_nababganj_inputs"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-3 border-t flex justify-end gap-2">
-                <button onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700 flex items-center gap-1">
-                    <i class="fa-solid fa-paper-plane"></i> Save & Send Access Mails
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CREATE / EDIT EVENT MODAL -->
-    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 my-8">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modalTitle" class="font-bold text-gray-800 text-lg">Create New Event</h3>
+                <h3 id="modalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Create Event & Custom Registration Form</h3>
                 <button onclick="closeModal('eventModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <form onsubmit="saveEvent(event)" class="space-y-3">
+            <form onsubmit="saveEvent(event)" class="space-y-4">
                 <input type="hidden" id="editingEventId">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
-                    <input type="text" id="evTitle" required placeholder="e.g. Tree Plantation Campaign" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila / Unit *</label>
-                    <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                        <option value="Dhaka South City">Dhaka South City</option>
-                        <option value="Keraniganj">Keraniganj</option>
-                        <option value="Dohar">Dohar</option>
-                        <option value="Nababganj">Nababganj</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
-                    <input type="text" id="evVenue" required placeholder="e.g. Bahadur Shah Park, Old Dhaka" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
-
-                <!-- GEO-FENCING SETTINGS -->
-                <div class="grid grid-cols-2 gap-2 bg-gray-50 p-3 rounded-xl border">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-600 uppercase mb-1">Latitude</label>
-                        <input type="number" step="any" id="evLat" value="23.7099" class="w-full border rounded-lg px-2 py-1 text-xs">
+                <!-- Basic Event Details -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
+                        <input type="text" id="evTitle" required placeholder="e.g. Tree Plantation Campaign 2026" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                     </div>
+
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-600 uppercase mb-1">Longitude</label>
-                        <input type="number" step="any" id="evLng" value="90.4117" class="w-full border rounded-lg px-2 py-1 text-xs">
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila *</label>
+                        <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                            <option value="Dhaka South City">Dhaka South City</option>
+                            <option value="Keraniganj">Keraniganj</option>
+                            <option value="Dohar">Dohar</option>
+                            <option value="Nababganj">Nababganj</option>
+                        </select>
                     </div>
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-gray-600 uppercase mb-1">Allowed Check-in Radius (Meters)</label>
-                        <input type="number" id="evRadius" value="300" placeholder="300" class="w-full border rounded-lg px-2 py-1 text-xs">
-                        <span class="text-[10px] text-gray-400">* Volunteers must be within this range to check-in.</span>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
+                        <input type="text" id="evVenue" required placeholder="e.g. Bahadur Shah Park" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                    </div>
+                </div>
+
+                <!-- MAP & GEO-FENCING RADIUS SETTINGS -->
+                <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-bold text-gray-700 uppercase"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> Select Geofence Location on Map</label>
+                        <span class="text-[10px] text-gray-500">Click on map to pin position</span>
+                    </div>
+                    
+                    <div id="map"></div>
+
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-600 uppercase">Latitude</label>
+                            <input type="number" step="any" id="evLat" value="23.7099" readonly class="w-full border rounded-lg px-2 py-1 text-xs bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-600 uppercase">Longitude</label>
+                            <input type="number" step="any" id="evLng" value="90.4117" readonly class="w-full border rounded-lg px-2 py-1 text-xs bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-600 uppercase">Radius (Meters)</label>
+                            <input type="number" id="evRadius" value="300" onchange="updateMapCircle()" class="w-full border rounded-lg px-2 py-1 text-xs border-vbdGreen">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INTEGRATED ADVANCED FORM BUILDER (GOOGLE FORMS ALTERNATIVE) -->
+                <div class="bg-gradient-to-r from-red-50 to-green-50 p-3 sm:p-4 rounded-xl border border-gray-200 space-y-3">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                        <h4 class="font-bold text-xs sm:text-sm text-gray-800"><i class="fa-solid fa-wpforms text-vbdGreen mr-1"></i> Advanced Form Setup</h4>
+                        <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Rich Formatting</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Form Header Description</label>
+                        <div class="flex gap-1 mb-1">
+                            <button type="button" onclick="formatText('bold')" class="px-2 py-1 bg-white border text-xs font-bold rounded">B</button>
+                            <button type="button" onclick="formatText('italic')" class="px-2 py-1 bg-white border text-xs italic rounded">I</button>
+                            <button type="button" onclick="formatText('underline')" class="px-2 py-1 bg-white border text-xs underline rounded">U</button>
+                        </div>
+                        <textarea id="formDescription" rows="2" placeholder="Form description with rich styling..." class="w-full border rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen"></textarea>
+                    </div>
+
+                    <!-- Custom Questions Area -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-semibold text-gray-700 uppercase">Custom Fields / Questions</label>
+                            <button type="button" onclick="addCustomField()" class="text-xs bg-vbdGreen text-white px-2 py-1 rounded-lg font-bold"><i class="fa-solid fa-plus"></i> Add Question</button>
+                        </div>
+                        <div id="customQuestionsContainer" class="space-y-2">
+                            <!-- Custom fields added dynamically -->
+                        </div>
                     </div>
                 </div>
 
                 <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-sm shadow hover:bg-green-700">Save Event</button>
+                    <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Save Event & Form</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- FORM BUILDER MODAL -->
-    <div id="formBuilderModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 my-8">
+    <!-- PUBLIC / VOLUNTEER CUSTOM REGISTRATION FORM MODAL (ADVANCED THEMED) -->
+    <div id="publicRegisterModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 my-6 overflow-hidden relative">
+            
+            <!-- Animated Header Theme -->
+            <div class="bg-gradient-to-r from-vbdRed via-vbdGreen to-vbdDarkGreen animate-gradient-x p-4 text-white -m-4 sm:-m-6 mb-4 rounded-t-2xl">
+                <h3 id="publicFormTitle" class="font-bold text-base sm:text-xl">Registration Form</h3>
+                <p id="publicFormDesc" class="text-xs text-gray-100 mt-1"></p>
+            </div>
+
+            <form onsubmit="submitVolunteerRegistration(event)" class="space-y-3 pt-2">
+                <input type="hidden" id="registerEventId">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Full Name *</label>
+                    <input type="text" id="regName" required placeholder="e.g. Shakil Hossain" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Phone Number *</label>
+                        <input type="tel" id="regPhone" required placeholder="017xxxxxxxx" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Blood Group</label>
+                        <select id="regBlood" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
+                            <option value="A+">A+</option>
+                            <option value="B+">B+</option>
+                            <option value="O+">O+</option>
+                            <option value="AB+">AB+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="dynamicFormFields" class="space-y-2 border-t pt-2">
+                    <!-- Custom Created Questions Render Here -->
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeModal('publicRegisterModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Submit Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- REGISTERED VOLUNTEERS LIST MODAL -->
+    <div id="registeredListModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-wpforms text-vbdGreen mr-1"></i> Custom Form Builder</h3>
-                <button onclick="closeModal('formBuilderModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Registered Volunteers</h3>
+                <button onclick="closeModal('registeredListModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Form Title</label>
-                    <input type="text" id="formTitle" placeholder="e.g. Volunteer Recruitment 2026" class="w-full border rounded-xl px-3 py-2 text-sm outline-none">
-                </div>
-
-                <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-2">
-                    <p class="font-bold text-gray-700">Default Auto-Profile Fields Enabled:</p>
-                    <p class="text-gray-500"><i class="fa-solid fa-check text-vbdGreen mr-1"></i> Full Name, Phone, Upazila/Unit</p>
-                    <p class="text-gray-500"><i class="fa-solid fa-check text-vbdGreen mr-1"></i> Blood Group & Institution Name</p>
-                </div>
-
-                <button onclick="publishForm()" class="w-full py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-sm shadow hover:bg-green-700">Publish Form & Copy Link</button>
+            <div id="registeredListContent" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <!-- Volunteers List Rendered Here -->
             </div>
+        </div>
+    </div>
+
+    <!-- MASTER ACCESS MANAGEMENT SHEET MODAL -->
+    <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-key text-vbdYellow mr-1"></i> Master Access Permission Control</h3>
+                    <p class="text-xs text-gray-500">Update Gmail IDs for Annual Access Transfer</p>
+                </div>
+                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
+                <div class="bg-red-50 p-3 rounded-xl border border-red-100 space-y-2">
+                    <h4 class="font-bold text-vbdRed">District Board Members (6 Roles)</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="districtBoardInputs"></div>
+                </div>
+
+                <div class="bg-green-50 p-3 rounded-xl border border-green-100 space-y-2">
+                    <h4 class="font-bold text-vbdGreen">Upazila Board Members (4 Units)</h4>
+                    <div id="upazilaBoardInputs" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <button onclick="saveAndSendAccessEmails()" class="w-full py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm">Save & Email Access Tokens</button>
         </div>
     </div>
 
@@ -314,74 +355,75 @@
         // SYSTEM DATA STATE
         let currentUser = null;
         let activeUpazilaFilter = 'all';
-
-        // MASTER ACCESS EMAIL CONFIGURATION DATABASE
-        let masterAccessData = {
-            district: {
-                vp: 'vp.dhakasouth@vbd.com',
-                gs: 'gs.dhakasouth@vbd.com',
-                hr: 'hr.dhakasouth@vbd.com',
-                pr: 'pr.dhakasouth@vbd.com',
-                finance: 'finance.dhakasouth@vbd.com',
-                logistics: 'logistics.dhakasouth@vbd.com'
-            },
-            upazila: {
-                dsc: { pres: 'pres.dsc@vbd.com', gs: 'gs.dsc@vbd.com', hr: 'hr.dsc@vbd.com', proj: 'proj.dsc@vbd.com', fin: 'fin.dsc@vbd.com' },
-                keraniganj: { pres: 'pres.keraniganj@vbd.com', gs: 'gs.keraniganj@vbd.com', hr: 'hr.keraniganj@vbd.com', proj: 'proj.keraniganj@vbd.com', fin: 'fin.keraniganj@vbd.com' },
-                dohar: { pres: 'pres.dohar@vbd.com', gs: 'gs.dohar@vbd.com', hr: 'hr.dohar@vbd.com', proj: 'proj.dohar@vbd.com', fin: 'fin.dohar@vbd.com' },
-                nababganj: { pres: 'pres.nababganj@vbd.com', gs: 'gs.nababganj@vbd.com', hr: 'hr.nababganj@vbd.com', proj: 'proj.nababganj@vbd.com', fin: 'fin.nababganj@vbd.com' }
-            }
-        };
+        let map, marker, circle;
 
         let events = [
             {
                 id: 'ev_1',
-                title: 'Clean Dhaka Campaign',
+                title: 'Clean Dhaka Campaign 2026',
                 upazila: 'Dhaka South City',
                 venue: 'Bahadur Shah Park',
                 lat: 23.7099,
                 lng: 90.4117,
                 radius: 500,
-                attendees: [],
-                checkedInUsers: []
-            },
-            {
-                id: 'ev_2',
-                title: 'Tree Plantation & Awareness',
-                upazila: 'Keraniganj',
-                venue: 'Keraniganj Girls School Ground',
-                lat: 23.6800,
-                lng: 90.3700,
-                radius: 300,
-                attendees: [],
-                checkedInUsers: []
+                formDesc: 'Join us to make Old Dhaka clean and sustainable!',
+                customFields: ['Institute Name', 'T-Shirt Size'],
+                registeredVolunteers: [
+                    { name: 'Tanvir Hossain', phone: '01711002233', blood: 'O+', customAnswers: { 'Institute Name': 'DU', 'T-Shirt Size': 'L' } }
+                ],
+                checkedInUsers: [],
+                checkedOutUsers: []
             }
         ];
+
+        // INITIALIZE MAP
+        function initMap(lat = 23.7099, lng = 90.4117, radius = 300) {
+            setTimeout(() => {
+                if (!map) {
+                    map = L.map('map').setView([lat, lng], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                    circle = L.circle([lat, lng], { radius: radius, color: '#006A4E', fillColor: '#006A4E', fillOpacity: 0.2 }).addTo(map);
+
+                    marker.on('dragend', function (e) {
+                        const position = marker.getLatLng();
+                        document.getElementById('evLat').value = position.lat.toFixed(6);
+                        document.getElementById('evLng').value = position.lng.toFixed(6);
+                        circle.setLatLng(position);
+                    });
+
+                    map.on('click', function (e) {
+                        marker.setLatLng(e.latlng);
+                        circle.setLatLng(e.latlng);
+                        document.getElementById('evLat').value = e.latlng.lat.toFixed(6);
+                        document.getElementById('evLng').value = e.latlng.lng.toFixed(6);
+                    });
+                } else {
+                    map.invalidateSize();
+                    map.setView([lat, lng], 14);
+                    marker.setLatLng([lat, lng]);
+                    circle.setLatLng([lat, lng]);
+                    circle.setRadius(radius);
+                }
+            }, 300);
+        }
+
+        function updateMapCircle() {
+            const rad = parseInt(document.getElementById('evRadius').value) || 300;
+            if (circle) circle.setRadius(rad);
+        }
 
         // USER LOGIN SIMULATION
         function loginAs(role) {
             if (role === 'district_president') {
-                currentUser = {
-                    name: 'Sabbir Ahmed',
-                    role: 'district_president',
-                    designation: 'President (District Board)',
-                    upazila: 'Dhaka South Central'
-                };
+                currentUser = { name: 'Sabbir Ahmed', role: 'district_president', designation: 'President (District Board)', upazila: 'Dhaka South Central' };
             } else if (role === 'upazila_admin') {
-                currentUser = {
-                    name: 'Rahim Chowdhury',
-                    role: 'upazila_admin',
-                    designation: 'General Secretary (Keraniganj Board)',
-                    upazila: 'Keraniganj'
-                };
+                currentUser = { name: 'Rahim Chowdhury', role: 'upazila_admin', designation: 'General Secretary (Keraniganj Board)', upazila: 'Keraniganj' };
             } else {
-                currentUser = {
-                    name: 'Tanvir Hossain',
-                    role: 'general_volunteer',
-                    designation: 'General Member',
-                    upazila: 'Dhaka South City',
-                    stats: { attended: 4, late: 1, missed: 0, hours: 12 }
-                };
+                currentUser = { name: 'Tanvir Hossain', role: 'general_volunteer', designation: 'General Member', upazila: 'Dhaka South City', stats: { attended: 4, late: 1, missed: 0, hours: 12 } };
             }
 
             document.getElementById('authSection').classList.add('hidden');
@@ -405,7 +447,7 @@
                 adminHeader.classList.remove('hidden');
                 upazilaFilter.classList.remove('hidden');
                 volStats.classList.add('hidden');
-                btnMaster.classList.remove('hidden'); // Master Access Only for President & VP
+                btnMaster.classList.remove('hidden');
             } else if (currentUser.role === 'upazila_admin') {
                 adminHeader.classList.remove('hidden');
                 upazilaFilter.classList.add('hidden');
@@ -424,43 +466,7 @@
             }
         }
 
-        // RENDER MASTER ACCESS MODAL INPUTS
-        function openMasterAccessModal() {
-            const districtContainer = document.getElementById('districtBoardInputs');
-            districtContainer.innerHTML = `
-                <div><label>Vice President Email</label><input id="email_district_vp" value="${masterAccessData.district.vp}" class="w-full border rounded px-2 py-1"></div>
-                <div><label>General Secretary Email</label><input id="email_district_gs" value="${masterAccessData.district.gs}" class="w-full border rounded px-2 py-1"></div>
-                <div><label>HR Secretary Email</label><input id="email_district_hr" value="${masterAccessData.district.hr}" class="w-full border rounded px-2 py-1"></div>
-                <div><label>PR Secretary Email</label><input id="email_district_pr" value="${masterAccessData.district.pr}" class="w-full border rounded px-2 py-1"></div>
-                <div><label>Finance Secretary Email</label><input id="email_district_fin" value="${masterAccessData.district.finance}" class="w-full border rounded px-2 py-1"></div>
-                <div><label>Logistics Secretary Email</label><input id="email_district_log" value="${masterAccessData.district.logistics}" class="w-full border rounded px-2 py-1"></div>
-            `;
-
-            renderUpazilaEmailInputs('dsc', masterAccessData.upazila.dsc);
-            renderUpazilaEmailInputs('keraniganj', masterAccessData.upazila.keraniganj);
-            renderUpazilaEmailInputs('dohar', masterAccessData.upazila.dohar);
-            renderUpazilaEmailInputs('nababganj', masterAccessData.upazila.nababganj);
-
-            document.getElementById('masterAccessModal').classList.remove('hidden');
-        }
-
-        function renderUpazilaEmailInputs(prefix, data) {
-            const container = document.getElementById(`upazila_${prefix}_inputs`);
-            container.innerHTML = `
-                <div><label class="text-[10px] text-gray-500">President</label><input id="email_${prefix}_pres" value="${data.pres}" class="w-full border rounded px-2 py-1"></div>
-                <div><label class="text-[10px] text-gray-500">General Secretary</label><input id="email_${prefix}_gs" value="${data.gs}" class="w-full border rounded px-2 py-1"></div>
-                <div><label class="text-[10px] text-gray-500">HR Secretary</label><input id="email_${prefix}_hr" value="${data.hr}" class="w-full border rounded px-2 py-1"></div>
-                <div><label class="text-[10px] text-gray-500">Project Secretary</label><input id="email_${prefix}_proj" value="${data.proj}" class="w-full border rounded px-2 py-1"></div>
-                <div><label class="text-[10px] text-gray-500">Finance Officer</label><input id="email_${prefix}_fin" value="${data.fin}" class="w-full border rounded px-2 py-1"></div>
-            `;
-        }
-
-        function saveAndSendAccessEmails() {
-            alert("Master Access Updated Successfully! Automated activation emails with secure login tokens have been sent to all newly assigned board members.");
-            closeModal('masterAccessModal');
-        }
-
-        // RENDER EVENTS CARD
+        // RENDER EVENTS
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
             container.innerHTML = '';
@@ -472,51 +478,64 @@
             });
 
             filteredEvents.forEach(ev => {
-                const isRegistered = ev.attendees.includes(currentUser.name);
+                const isRegistered = ev.registeredVolunteers.some(v => v.name === currentUser.name);
                 const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
-                
+                const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
+
                 const canManage = (currentUser.role === 'district_president') || 
                                   (currentUser.role === 'upazila_admin' && currentUser.upazila === ev.upazila);
 
                 container.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
                         ${canManage ? `
                             <div class="absolute top-3 right-3 flex gap-1">
+                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-md hover:bg-green-100 font-bold"><i class="fa-solid fa-users mr-1"></i> Responses (${ev.registeredVolunteers.length})</button>
                                 <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
                                 <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
                             </div>
                         ` : ''}
 
                         <div>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
-                            <h4 class="font-bold text-gray-800 text-base mt-1">${ev.title}</h4>
+                            <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
+                            <h4 class="font-bold text-gray-800 text-sm sm:text-base mt-1">${ev.title}</h4>
                             <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
                         </div>
 
-                        <!-- GEO CHECK-IN CONTROLS -->
+                        <!-- GEO CHECK-IN & CHECK-OUT AREA -->
                         <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-2">
-                            <div class="flex justify-between text-[11px] text-gray-500">
-                                <span>Check-in Radius: <b>${ev.radius}m</b></span>
-                                <span>Attendees: <b>${ev.attendees.length}</b></span>
+                            <div class="flex justify-between text-[10px] sm:text-[11px] text-gray-500">
+                                <span>Allowed Radius: <b>${ev.radius}m</b></span>
+                                <span>Checked In: <b>${ev.checkedInUsers.length}</b></span>
                             </div>
 
-                            ${isCheckedIn ? `
-                                <div class="bg-green-100 text-vbdGreen p-2 rounded-lg text-center font-bold">
-                                    <i class="fa-solid fa-circle-check mr-1"></i> Checked-In Successfully
+                            ${!isCheckedIn ? `
+                                <button onclick="triggerGeoCheckIn('${ev.id}')" class="w-full py-2 bg-vbdGreen text-white font-bold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-crosshairs"></i> Geo Check-In (In-Range Only)
+                                </button>
+                            ` : !isCheckedOut ? `
+                                <div class="space-y-1">
+                                    <div class="bg-green-100 text-vbdGreen p-1.5 rounded text-center font-bold text-[11px]">
+                                        <i class="fa-solid fa-circle-check"></i> Checked-In
+                                    </div>
+                                    <button onclick="triggerCheckOut('${ev.id}')" class="w-full py-2 bg-vbdRed text-white font-bold rounded-lg hover:bg-red-700 transition">
+                                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Check-Out (Anywhere)
+                                    </button>
                                 </div>
                             ` : `
-                                <button onclick="triggerGeoCheckIn('${ev.id}')" class="w-full py-2 bg-vbdGreen text-white font-bold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-crosshairs"></i> Auto Geo Check-In
-                                </button>
+                                <div class="bg-gray-200 text-gray-700 p-2 rounded text-center font-bold">
+                                    <i class="fa-solid fa-flag-checkered mr-1"></i> Attendance Completed
+                                </div>
                             `}
                         </div>
 
-                        <!-- EVENT REGISTRATION -->
-                        <div class="pt-1 flex gap-2">
+                        <!-- PUBLIC REGISTRATION BUTTON -->
+                        <div class="pt-1">
                             ${!isRegistered ? `
-                                <button onclick="registerEvent('${ev.id}')" class="w-full py-2 border border-vbdGreen text-vbdGreen font-bold rounded-xl text-xs hover:bg-green-50">Register for Event</button>
+                                <button onclick="openRegistrationModal('${ev.id}')" class="w-full py-2 border border-vbdGreen text-vbdGreen font-bold rounded-xl text-xs hover:bg-green-50">
+                                    <i class="fa-solid fa-wpforms mr-1"></i> Fill Form & Register
+                                </button>
                             ` : `
-                                <button disabled class="w-full py-2 bg-gray-100 text-gray-400 font-bold rounded-xl text-xs">Registered</button>
+                                <button disabled class="w-full py-2 bg-gray-100 text-gray-400 font-bold rounded-xl text-xs">Registered for Event</button>
                             `}
                         </div>
                     </div>
@@ -524,10 +543,10 @@
             });
         }
 
-        // GEO-FENCING GPS CALCULATION
+        // GPS CHECK-IN & CHECK-OUT LOGIC
         function triggerGeoCheckIn(eventId) {
             if (!navigator.geolocation) {
-                alert("Geolocation is not supported by your browser.");
+                alert("GPS Geolocation is not supported by your browser.");
                 return;
             }
 
@@ -536,44 +555,136 @@
             navigator.geolocation.getCurrentPosition((position) => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
-
                 const distance = getDistanceFromLatLonInMeters(userLat, userLng, ev.lat, ev.lng);
 
                 if (distance <= ev.radius) {
                     if (!ev.checkedInUsers.includes(currentUser.name)) {
                         ev.checkedInUsers.push(currentUser.name);
                     }
-                    alert(`Check-in Successful! You are ${Math.round(distance)} meters away from the venue.`);
+                    alert(`Check-in Successful! You are inside the venue area (${Math.round(distance)}m away).`);
                     renderEvents();
                 } else {
                     alert(`Check-in Failed! You are ${Math.round(distance)}m away. You must be within ${ev.radius}m of the event venue to check-in.`);
                 }
             }, () => {
-                alert("Unable to retrieve your GPS location. Please turn on Location services.");
+                alert("Location permission denied. Please enable GPS on your mobile device.");
             });
+        }
+
+        function triggerCheckOut(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            if (!ev.checkedOutUsers.includes(currentUser.name)) {
+                ev.checkedOutUsers.push(currentUser.name);
+            }
+            alert("Check-out Successful! Thank you for your volunteer service.");
+            renderEvents();
         }
 
         function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
             const R = 6371000;
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c;
+            const dLat = (lat2 - lat1) * (Math.PI/180);
+            const dLon = (lon2 - lon1) * (Math.PI/180);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2); 
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        function deg2rad(deg) { return deg * (Math.PI/180); }
+        // CUSTOM FORM FIELD BUILDER
+        function addCustomField() {
+            const container = document.getElementById('customQuestionsContainer');
+            const id = Date.now();
+            container.innerHTML += `
+                <div id="field_${id}" class="flex gap-2 items-center">
+                    <input type="text" placeholder="Question Title (e.g. Institute Name)" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
+                    <button type="button" onclick="document.getElementById('field_${id}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+        }
 
-        function registerEvent(eventId) {
+        function formatText(type) {
+            const textarea = document.getElementById('formDescription');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
+
+            let formatted = selected;
+            if (type === 'bold') formatted = `<b>${selected}</b>`;
+            if (type === 'italic') formatted = `<i>${selected}</i>`;
+            if (type === 'underline') formatted = `<u>${selected}</u>`;
+
+            textarea.value = text.substring(0, start) + formatted + text.substring(end);
+        }
+
+        // FORM SUBMISSION & PUBLIC REGISTRATION
+        function openRegistrationModal(eventId) {
             const ev = events.find(e => e.id === eventId);
-            if (!ev.attendees.includes(currentUser.name)) {
-                ev.attendees.push(currentUser.name);
-            }
+            document.getElementById('registerEventId').value = ev.id;
+            document.getElementById('publicFormTitle').innerText = ev.title;
+            document.getElementById('publicFormDesc').innerHTML = ev.formDesc || 'Fill out the form to confirm registration.';
+
+            const container = document.getElementById('dynamicFormFields');
+            container.innerHTML = '';
+            
+            ev.customFields.forEach(q => {
+                container.innerHTML += `
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">${q}</label>
+                        <input type="text" required data-question="${q}" class="custom-answer-input w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
+                    </div>
+                `;
+            });
+
+            document.getElementById('publicRegisterModal').classList.remove('hidden');
+        }
+
+        function submitVolunteerRegistration(e) {
+            e.preventDefault();
+            const eventId = document.getElementById('registerEventId').value;
+            const ev = events.find(e => e.id === eventId);
+
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const blood = document.getElementById('regBlood').value;
+
+            const answers = {};
+            document.querySelectorAll('.custom-answer-input').forEach(inp => {
+                answers[inp.dataset.question] = inp.value;
+            });
+
+            ev.registeredVolunteers.push({ name, phone, blood, customAnswers: answers });
+
+            closeModal('publicRegisterModal');
             renderEvents();
-            alert("Successfully registered for this event!");
+            alert("Registration successful! Your profile record has been auto-generated.");
+        }
+
+        function viewRegisteredList(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            document.getElementById('regModalTitle').innerText = `Registrations: ${ev.title}`;
+            const container = document.getElementById('registeredListContent');
+            container.innerHTML = '';
+
+            if (ev.registeredVolunteers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registration responses yet.</p>`;
+            } else {
+                ev.registeredVolunteers.forEach((v, i) => {
+                    container.innerHTML += `
+                        <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-1">
+                            <div class="flex justify-between font-bold text-gray-800">
+                                <span>${i + 1}. ${v.name} (${v.blood})</span>
+                                <span class="text-vbdGreen">${v.phone}</span>
+                            </div>
+                            <div class="text-gray-500 text-[11px]">
+                                ${Object.entries(v.customAnswers).map(([q, a]) => `<span><b>${q}:</b>${a}</span> `).join('| ')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('registeredListModal').classList.remove('hidden');
         }
 
         function saveEvent(e) {
@@ -585,25 +696,36 @@
             const lat = parseFloat(document.getElementById('evLat').value);
             const lng = parseFloat(document.getElementById('evLng').value);
             const radius = parseInt(document.getElementById('evRadius').value);
+            const formDesc = document.getElementById('formDescription').value;
+
+            const customFields = [];
+            document.querySelectorAll('.custom-q-input').forEach(inp => {
+                if (inp.value.trim() !== '') customFields.push(inp.value.trim());
+            });
 
             if (editId) {
                 const ev = events.find(e => e.id === editId);
-                ev.title = title;
-                ev.upazila = upazila;
-                ev.venue = venue;
-                ev.lat = lat;
-                ev.lng = lng;
-                ev.radius = radius;
+                ev.title = title; ev.upazila = upazila; ev.venue = venue;
+                ev.lat = lat; ev.lng = lng; ev.radius = radius;
+                ev.formDesc = formDesc; ev.customFields = customFields;
             } else {
                 events.unshift({
                     id: 'ev_' + Date.now(),
-                    title, upazila, venue, lat, lng, radius,
-                    attendees: [], checkedInUsers: []
+                    title, upazila, venue, lat, lng, radius, formDesc, customFields,
+                    registeredVolunteers: [], checkedInUsers: [], checkedOutUsers: []
                 });
             }
 
             closeModal('eventModal');
             renderEvents();
+        }
+
+        function openCreateEventModal() {
+            document.getElementById('editingEventId').value = '';
+            document.getElementById('modalTitle').innerText = "Create Event & Custom Registration Form";
+            document.getElementById('customQuestionsContainer').innerHTML = '';
+            document.getElementById('eventModal').classList.remove('hidden');
+            initMap();
         }
 
         function editEvent(id) {
@@ -615,31 +737,38 @@
             document.getElementById('evLat').value = ev.lat;
             document.getElementById('evLng').value = ev.lng;
             document.getElementById('evRadius').value = ev.radius;
-            document.getElementById('modalTitle').innerText = "Edit Event Details";
+            document.getElementById('formDescription').value = ev.formDesc || '';
+
+            const container = document.getElementById('customQuestionsContainer');
+            container.innerHTML = '';
+            ev.customFields.forEach(q => {
+                const qId = Date.now() + Math.random();
+                container.innerHTML += `
+                    <div id="field_${qId}" class="flex gap-2 items-center">
+                        <input type="text" value="${q}" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
+                        <button type="button" onclick="document.getElementById('field_${qId}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+
             document.getElementById('eventModal').classList.remove('hidden');
+            initMap(ev.lat, ev.lng, ev.radius);
         }
 
         function deleteEvent(id) {
-            if (confirm("Are you sure you want to delete this event?")) {
+            if (confirm("Are you sure you want to delete this event and its form data?")) {
                 events = events.filter(e => e.id !== id);
                 renderEvents();
             }
         }
 
-        function openCreateEventModal() {
-            document.getElementById('editingEventId').value = '';
-            document.getElementById('modalTitle').innerText = "Create New Event";
-            document.getElementById('eventModal').classList.remove('hidden');
+        function openMasterAccessModal() {
+            document.getElementById('masterAccessModal').classList.remove('hidden');
         }
 
-        function openFormBuilderModal() {
-            document.getElementById('formBuilderModal').classList.remove('hidden');
-        }
-
-        function publishForm() {
-            const title = document.getElementById('formTitle').value || 'Recruitment Form';
-            alert(`Form "${title}" generated! Auto-registration link copied to clipboard.`);
-            closeModal('formBuilderModal');
+        function saveAndSendAccessEmails() {
+            alert("Master Access Emails Saved! Automated access tokens dispatched to respective board members.");
+            closeModal('masterAccessModal');
         }
 
         function closeModal(id) {
