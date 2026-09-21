@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBD Dhaka South - Automated Management Portal</title>
+    <title>VBD Dhaka South - Smart Portal</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Mapbox GL JS & CSS -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -26,16 +22,14 @@
                         vbdYellow: '#FFC72C'
                     },
                     fontFamily: {
-                        sans: ['Hind Siliguri', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; }
-        #mapboxMap { height: 320px; width: 100%; border-radius: 12px; }
-        .mapboxgl-popup { font-family: 'Hind Siliguri', sans-serif; }
+        body { font-family: 'Inter', sans-serif; }
         .search-suggestion-box {
             position: absolute;
             top: 100%;
@@ -44,10 +38,10 @@
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 0 0 12px 12px;
-            max-height: 220px;
+            max-height: 200px;
             overflow-y: auto;
             z-index: 9999;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -63,15 +57,15 @@
                          alt="VBD Logo" class="h-12 w-auto object-contain">
                     <div>
                         <h1 class="font-bold text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
-                        <p class="text-xs text-vbdGreen font-bold tracking-wide">ঢাকা দক্ষিণ জেলা শাখা</p>
+                        <p class="text-xs text-vbdGreen font-bold tracking-wide">Dhaka South District</p>
                     </div>
                 </div>
                 <div id="navUserMenu" class="flex items-center space-x-3 hidden">
                     <span id="navRoleBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-vbdGreen border border-green-200">
-                        ভলান্টিয়ার
+                        Volunteer
                     </span>
                     <button onclick="logout()" class="text-sm font-medium text-gray-600 hover:text-vbdRed transition flex items-center gap-1 bg-gray-100 px-3 py-1.5 rounded-lg">
-                        <i class="fa-solid fa-right-from-bracket"></i> লগআউট
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
                     </button>
                 </div>
             </div>
@@ -85,16 +79,16 @@
         <div id="authSection" class="max-w-md mx-auto my-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
             <div class="text-center mb-8">
                 <img src="https://raw.githubusercontent.com/vbd-assets/logos/main/vbd-logo.png" onerror="this.src='https://ui-avatars.com/api/?name=VBD&background=E31B23&color=fff';" class="h-20 mx-auto mb-3 object-contain">
-                <h2 class="text-2xl font-bold text-gray-800">প্যানেল লগইন</h2>
-                <p class="text-sm text-gray-500 mt-1">ভলান্টিয়ার বা এডমিন অ্যাকাউন্টে প্রবেশ করুন</p>
+                <h2 class="text-2xl font-bold text-gray-800">Panel Login</h2>
+                <p class="text-sm text-gray-500 mt-1">Access Admin or Volunteer Account</p>
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-xs">
                 <button onclick="demoLogin('district')" class="p-3.5 border border-red-300 bg-red-50 text-vbdRed font-bold rounded-xl hover:bg-red-100 transition shadow-sm">
-                    <i class="fa-solid fa-crown block text-center mb-1 text-base"></i> ডিস্ট্রিক্ট বোর্ড (Admin)
+                    <i class="fa-solid fa-crown block text-center mb-1 text-base"></i> District Board (Admin)
                 </button>
                 <button onclick="demoLogin('volunteer')" class="p-3.5 border border-green-300 bg-green-50 text-vbdGreen font-bold rounded-xl hover:bg-green-100 transition shadow-sm">
-                    <i class="fa-solid fa-user-check block text-center mb-1 text-base"></i> ভলান্টিয়ার প্রোফাইল
+                    <i class="fa-solid fa-user-check block text-center mb-1 text-base"></i> Volunteer Profile
                 </button>
             </div>
         </div>
@@ -106,8 +100,8 @@
                 <div class="flex items-center gap-4">
                     <div id="userAvatar" class="w-12 h-12 bg-vbdGreen text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md">V</div>
                     <div>
-                        <h2 id="userNameDisplay" class="font-bold text-xl text-gray-800">স্বাগতম</h2>
-                        <p id="userRoleDetail" class="text-xs text-gray-500">ঢাকা দক্ষিণ জেলা শাখা</p>
+                        <h2 id="userNameDisplay" class="font-bold text-xl text-gray-800">Welcome</h2>
+                        <p id="userRoleDetail" class="text-xs text-gray-500">Dhaka South District</p>
                     </div>
                 </div>
             </div>
@@ -115,11 +109,11 @@
             <!-- Admin Control -->
             <div id="adminControls" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-lg flex justify-between items-center">
                 <div>
-                    <h3 class="text-xl font-bold">ইভেন্ট ম্যানেজমেন্ট প্যানেল</h3>
-                    <p class="text-xs text-green-100">স্মার্ট ম্যাপবক্স হাই-স্পিড সার্চ দিয়ে নতুন ইভেন্ট যুক্ত করুন</p>
+                    <h3 class="text-xl font-bold">Event Management Panel</h3>
+                    <p class="text-xs text-green-100">Add new events with live location search</p>
                 </div>
                 <button onclick="openCreateEventModal()" class="px-4 py-2.5 bg-vbdYellow text-gray-900 rounded-xl font-bold text-sm shadow hover:bg-yellow-400 transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle"></i> নতুন ইভেন্ট যুক্ত করুন
+                    <i class="fa-solid fa-plus-circle"></i> Create New Event
                 </button>
             </div>
 
@@ -134,94 +128,70 @@
     <div id="createEventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 my-8">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> ম্যাপবক্স হাই-ডিফিনিশন ভেন্যু ম্যাপ</h3>
+                <h3 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-map-location-dot text-vbdRed mr-1"></i> Google Maps Venue Location</h3>
                 <button onclick="closeCreateEventModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <form onsubmit="saveNewEvent(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">ইভেন্টের নাম *</label>
-                    <input type="text" id="evName" required placeholder="যেমন: প্লাস্টিক ক্লিনিং ড্রাইভ" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
+                    <input type="text" id="evName" required placeholder="e.g. Plastic Cleaning Drive" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                 </div>
 
-                <!-- Live Auto-Suggest Search Input -->
+                <!-- Live Auto-Suggest Search Input + Search Button -->
                 <div class="relative">
                     <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> স্থান সার্চ করুন (টাইপ করলেই ড্রপডাউন আসবে) *
+                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> Search Venue/Location *
                     </label>
                     <div class="flex gap-2">
-                        <input type="text" id="searchInput" oninput="handleMapboxSearch()" placeholder="যেমন: Jaago, Dhanmondi 27, Star Kabab" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <input type="text" id="searchInput" oninput="handleSearchTyping()" placeholder="e.g. Jaago Foundation, Star Kabab, Dhanmondi 27" class="flex-1 border-2 border-vbdGreen rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <button type="button" onclick="performManualSearch()" class="px-4 py-2 bg-vbdGreen text-white font-bold text-xs rounded-xl hover:bg-green-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search
+                        </button>
                     </div>
                     <!-- Auto Suggestion List -->
                     <div id="suggestionsList" class="search-suggestion-box hidden"></div>
                 </div>
 
-                <!-- Map Container -->
-                <div id="mapboxMap"></div>
+                <!-- Live Google Map View -->
+                <div class="rounded-xl overflow-hidden border border-gray-200 h-64 bg-gray-100">
+                    <iframe id="googleMapIframe" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        src="https://maps.google.com/maps?q=Bahadur%20Shah%20Park,%20Dhaka&t=&z=15&ie=UTF8&iwloc=&output=embed">
+                    </iframe>
+                </div>
 
-                <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg border">
-                    <div>অক্ষাংশ (Lat): <span id="displayLat" class="font-bold text-gray-800">23.7099</span></div>
-                    <div>দ্রাঘিমাংশ (Lng): <span id="displayLng" class="font-bold text-gray-800">90.4117</span></div>
+                <div class="bg-gray-50 p-2.5 rounded-xl border text-xs text-gray-600">
+                    <span class="font-bold text-gray-700">Selected Location: </span>
+                    <span id="selectedAddressText">Bahadur Shah Park, Dhaka</span>
                 </div>
 
                 <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeCreateEventModal()" class="w-1/2 py-2.5 border rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50">বাতিল</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-sm shadow hover:bg-green-700">ইভেন্ট প্রকাশ করুন</button>
+                    <button type="button" onclick="closeCreateEventModal()" class="w-1/2 py-2.5 border rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-sm shadow hover:bg-green-700">Publish Event</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Mapbox Public Token
-        mapboxgl.accessToken = 'pk.eyJ1Ijoic2hhbXN1bGhhcTgxOCIsImEiOiJjbTlsM28yNnowMmI3MmlzN3lxc2c2Z3o0In0.XN3pE04iN7p1L3ABykC28Q';
-
-        let map, marker;
-        let selectedCoords = { lat: 23.7099, lng: 90.4117 };
-        let selectedAddress = "বাহাদুর শাহ পার্ক, ঢাকা";
+        let selectedAddress = "Bahadur Shah Park, Dhaka";
         let debounceTimer;
 
         window.eventsList = [
             {
                 id: 'ev_101',
-                title: 'বৃক্ষরোপণ ও প্লাস্টিক সচেতনতা অভিযান',
-                venue: 'বাহাদুর শাহ পার্ক, পুরান ঢাকা',
-                lat: 23.7099,
-                lng: 90.4117
+                title: 'Tree Plantation & Plastic Awareness Drive',
+                venue: 'Bahadur Shah Park, Old Dhaka',
             }
         ];
 
-        function initMapbox() {
-            if (map) return;
-
-            map = new mapboxgl.Map({
-                container: 'mapboxMap',
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: [90.4117, 23.7099], // [lng, lat]
-                zoom: 14
-            });
-
-            // Map Controls
-            map.addControl(new mapboxgl.NavigationControl());
-
-            // Draggable Marker
-            marker = new mapboxgl.Marker({ draggable: true, color: '#E31B23' })
-                .setLngLat([90.4117, 23.7099])
-                .addTo(map);
-
-            marker.on('dragend', () => {
-                const lngLat = marker.getLngLat();
-                updateLocation(lngLat.lat, lngLat.lng);
-            });
-
-            map.on('click', (e) => {
-                marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-                updateLocation(e.lngLat.lat, e.lngLat.lng);
-            });
-        }
-
-        // Mapbox Live Places Search Engine
-        function handleMapboxSearch() {
+        // Live Typing Auto Suggestions
+        function handleSearchTyping() {
             clearTimeout(debounceTimer);
             const query = document.getElementById('searchInput').value.trim();
             const box = document.getElementById('suggestionsList');
@@ -232,29 +202,18 @@
             }
 
             debounceTimer = setTimeout(() => {
-                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?country=bd&access_token=${mapboxgl.accessToken}&limit=5`;
-                
-                fetch(url)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=bd&limit=5`)
                     .then(res => res.json())
                     .then(data => {
                         box.innerHTML = '';
-                        if (!data.features || data.features.length === 0) {
-                            box.innerHTML = `<div class="p-3 text-xs text-gray-500">কোনো অবস্থান পাওয়া যায়নি</div>`;
+                        if (data.length === 0) {
+                            box.innerHTML = `<div class="p-3 text-xs text-gray-500">No locations found</div>`;
                         } else {
-                            data.features.forEach(feature => {
+                            data.forEach(item => {
                                 const div = document.createElement('div');
-                                div.className = 'p-3 text-xs text-gray-700 hover:bg-red-50 cursor-pointer border-b border-gray-100 flex items-start gap-2';
-                                div.innerHTML = `
-                                    <i class="fa-solid fa-location-dot text-vbdRed mt-0.5"></i>
-                                    <div>
-                                        <p class="font-bold text-gray-800">${feature.text}</p>
-                                        <p class="text-[10px] text-gray-500">${feature.place_name}</p>
-                                    </div>
-                                `;
-                                div.onclick = () => {
-                                    const [lng, lat] = feature.center;
-                                    selectSearchResult(lat, lng, feature.place_name);
-                                };
+                                div.className = 'p-2.5 text-xs text-gray-700 hover:bg-green-50 cursor-pointer border-b border-gray-100 flex items-center gap-2';
+                                div.innerHTML = `<i class="fa-solid fa-location-dot text-vbdRed"></i> <span>${item.display_name}</span>`;
+                                div.onclick = () => updateMapLocation(item.display_name);
                                 box.appendChild(div);
                             });
                         }
@@ -263,28 +222,26 @@
             }, 250);
         }
 
-        function selectSearchResult(lat, lng, fullAddress) {
-            map.flyTo({ center: [lng, lat], zoom: 16 });
-            marker.setLngLat([lng, lat]);
-            updateLocation(lat, lng, fullAddress);
-
-            document.getElementById('searchInput').value = fullAddress.split(',')[0];
-            document.getElementById('suggestionsList').classList.add('hidden');
+        // Search Button Handler
+        function performManualSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            updateMapLocation(query);
         }
 
-        function updateLocation(lat, lng, address = null) {
-            selectedCoords = { lat, lng };
-            document.getElementById('displayLat').innerText = lat.toFixed(5);
-            document.getElementById('displayLng').innerText = lng.toFixed(5);
-            if (address) selectedAddress = address;
+        // Update Google Map Location
+        function updateMapLocation(locationName) {
+            selectedAddress = locationName;
+            document.getElementById('selectedAddressText').innerText = locationName;
+            document.getElementById('searchInput').value = locationName.split(',')[0];
+            document.getElementById('suggestionsList').classList.add('hidden');
+
+            const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(locationName)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+            document.getElementById('googleMapIframe').src = embedUrl;
         }
 
         function openCreateEventModal() {
             document.getElementById('createEventModal').classList.remove('hidden');
-            setTimeout(() => {
-                initMapbox();
-                map.resize();
-            }, 200);
         }
 
         function closeCreateEventModal() {
@@ -295,7 +252,7 @@
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             document.getElementById('navUserMenu').classList.remove('hidden');
-            document.getElementById('userNameDisplay').innerText = role === 'district' ? 'এডমিন (ডিস্ট্রিক্ট বোর্ড)' : 'তানভীর (ভলান্টিয়ার)';
+            document.getElementById('userNameDisplay').innerText = role === 'district' ? 'Admin (District Board)' : 'Tanvir (Volunteer)';
             renderEvents();
         }
 
@@ -307,7 +264,6 @@
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-2">
                         <h4 class="font-bold text-gray-800">${ev.title}</h4>
                         <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
-                        <p class="text-[11px] text-vbdGreen font-mono">GPS Coords: ${ev.lat.toFixed(4)}, ${ev.lng.toFixed(4)}</p>
                     </div>
                 `;
             });
@@ -320,12 +276,10 @@
                 id: 'ev_' + Date.now(),
                 title: document.getElementById('evName').value,
                 venue: venueInput,
-                lat: selectedCoords.lat,
-                lng: selectedCoords.lng
             });
             closeCreateEventModal();
             renderEvents();
-            alert('সফলভাবে ইভেন্ট এবং ভেন্যু লোকেশন সেভ হয়েছে!');
+            alert('Event and location saved successfully!');
         }
 
         function logout() {
