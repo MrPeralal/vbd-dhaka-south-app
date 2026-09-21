@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Leaflet OpenStreetMap (Google Maps Alternative / Interactive Map) -->
+    
+    <!-- Leaflet OpenStreetMap & Geocoder Search CSS/JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -33,7 +34,7 @@
     </script>
     <style>
         body { font-family: 'Hind Siliguri', sans-serif; }
-        #mapPicker { height: 260px; width: 100%; border-radius: 12px; z-index: 10; }
+        #mapPicker { height: 280px; width: 100%; border-radius: 12px; z-index: 10; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
@@ -190,14 +191,14 @@
             <div id="adminControls" class="hidden bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h3 class="text-xl font-bold">অ্যাডমিন ও ইভেন্ট কন্ট্রোল প্যানেল</h3>
-                    <p class="text-xs text-green-100 opacity-90">গুগল ম্যাপে লোকেশন পিন করে ইভেন্ট ও অটো-রেজিস্ট্রেশন লিঙ্ক তৈরি করুন</p>
+                    <p class="text-xs text-green-100 opacity-90">গুগল ম্যাপে রিপোর্টিং ভেন্যু সার্চ ও পিন করে ইভেন্ট তৈরি করুন</p>
                 </div>
                 <button onclick="openCreateEventModal()" class="px-4 py-2.5 bg-vbdYellow text-gray-900 rounded-xl font-bold text-sm shadow hover:bg-yellow-400 transition flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle"></i> নতুন ইভেন্ট ও ফর্ম ক্রিয়েট করুন
                 </button>
             </div>
 
-            <!-- Navigation Tabs (Events / Registrations / Attendance Logs) -->
+            <!-- Navigation Tabs -->
             <div class="border-b border-gray-200 flex space-x-4">
                 <button onclick="switchTab('events')" id="tabEvents" class="py-2.5 px-4 font-bold text-sm border-b-2 border-vbdRed text-vbdRed">
                     <i class="fa-solid fa-calendar-days mr-1"></i> ইভেন্ট ও রেজিস্ট্রেশন লিঙ্ক
@@ -282,7 +283,7 @@
 
     </main>
 
-    <!-- Create Event Modal with Integrated Google Maps Alternative -->
+    <!-- Create Event Modal with Google Maps Search Bar & Interactive Marker -->
     <div id="createEventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 my-8">
             <div class="flex justify-between items-center border-b pb-3">
@@ -312,13 +313,22 @@
                     </div>
                 </div>
 
-                <!-- Google Maps Interactive Picker -->
+                <!-- Google Maps Search Box & Interactive Map -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                        ম্যাপে ভেন্যু সিলেক্ট করুন (Interactive Map Click)
+                        <i class="fa-solid fa-magnifying-glass text-vbdRed mr-1"></i> রিপোর্টিং স্থান/ভেন্যু সার্চ করুন (Google Maps Search)
                     </label>
+                    
+                    <!-- Search Input Field -->
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="mapSearchInput" placeholder="যেমন: Bahadur Shah Park, Dhaka" class="flex-1 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <button type="button" onclick="searchMapLocation()" class="px-4 py-2 bg-vbdGreen text-white font-bold rounded-xl text-sm hover:bg-green-700 transition">
+                            সার্চ
+                        </button>
+                    </div>
+
                     <div id="mapPicker"></div>
-                    <p class="text-[11px] text-gray-500 mt-1"><i class="fa-solid fa-circle-info text-vbdGreen"></i> ম্যাপে যেকোনো জায়গায় ক্লিক করলে অটোমেটিক পিন বসে যাবে।</p>
+                    <p class="text-[11px] text-gray-500 mt-1"><i class="fa-solid fa-circle-info text-vbdGreen"></i> সার্চ দিলে ম্যাপ স্বয়ংক্রিয়ভাবে উক্ত জায়গায় পিন সেট করে দেবে।</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg border">
@@ -334,7 +344,7 @@
         </div>
     </div>
 
-    <!-- Firebase & App Script Logic -->
+    <!-- Logic Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -361,7 +371,6 @@
         window.leafletMap = null;
         window.mapMarker = null;
 
-        // Sample State Collections
         window.eventsList = [
             {
                 id: 'ev_101',
@@ -388,7 +397,6 @@
 
         window.attendanceLogs = [];
 
-        // Check URL Parameters for Registration Link Mode
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const registerEventId = urlParams.get('register');
@@ -399,9 +407,9 @@
             initGPSWatcher();
         });
 
-        // Interactive Leaflet Map Picker Initialization
+        // Initialize Leaflet Interactive Map
         window.initMapPicker = function() {
-            if(window.leafletMap) return; // Prevent re-initialization
+            if(window.leafletMap) return;
 
             setTimeout(() => {
                 window.leafletMap = L.map('mapPicker').setView([window.currentGPS.lat, window.currentGPS.lng], 14);
@@ -413,7 +421,6 @@
 
                 window.mapMarker = L.marker([window.currentGPS.lat, window.currentGPS.lng], { draggable: true }).addTo(window.leafletMap);
 
-                // On Map Click Update Marker & Coords
                 window.leafletMap.on('click', function(e) {
                     updateSelectedLocation(e.latlng.lat, e.latlng.lng);
                 });
@@ -425,6 +432,35 @@
             }, 300);
         };
 
+        // Automatic Location Search Engine (Geocoding API Integration)
+        window.searchMapLocation = function() {
+            const query = document.getElementById('mapSearchInput').value;
+            if(!query) {
+                alert('অনুগ্রহ করে স্থান বা ভেন্যুর নাম টাইপ করুন।');
+                return;
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        window.leafletMap.setView([lat, lon], 16);
+                        updateSelectedLocation(lat, lon);
+                        
+                        // Sync Venue Input Text
+                        if(!document.getElementById('evVenue').value) {
+                            document.getElementById('evVenue').value = data[0].display_name.split(',')[0];
+                        }
+                    } else {
+                        alert('স্থানটি খুঁজে পাওয়া যায়নি! একটু সংক্ষেপে লিখুন (যেমন: Bahadur Shah Park, Dhaka)।');
+                    }
+                })
+                .catch(err => alert('সার্চ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।'));
+        };
+
         function updateSelectedLocation(lat, lng) {
             window.selectedMapCoords = { lat, lng };
             if(window.mapMarker) {
@@ -434,7 +470,6 @@
             document.getElementById('displayLng').innerText = lng.toFixed(5);
         }
 
-        // GPS Tracker
         function initGPSWatcher() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.watchPosition(
@@ -452,7 +487,6 @@
             }
         }
 
-        // Distance Calculator (Haversine Formula)
         window.calculateDistance = function(lat1, lon1, lat2, lon2) {
             if (!lat1 || !lon1 || !lat2 || !lon2) return 999999;
             const R = 6371e3;
@@ -468,7 +502,6 @@
             return R * c;
         };
 
-        // Show Dynamic Registration Link Form
         function showPublicRegistrationForm(eventId) {
             const ev = window.eventsList.find(e => e.id === eventId) || window.eventsList[0];
             document.getElementById('authSection').classList.add('hidden');
@@ -498,12 +531,10 @@
             window.registrationsList.unshift(newReg);
             alert('আপনার রেজিস্ট্রেশন সফল হয়েছে! এখন ডেমো লগইন দিয়ে আপনার পার্সোনাল প্রোফাইলে চেক-ইন টেস্ট করতে পারবেন।');
             
-            // Auto Login as registered user
             setUserSession({ name: newReg.name, email: newReg.email, role: 'volunteer', upazila: newReg.upazila });
             document.getElementById('publicRegistrationSection').classList.add('hidden');
         };
 
-        // Login Logic
         window.handleLogin = function(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -568,7 +599,6 @@
             document.getElementById('navUserMenu').classList.add('hidden');
         };
 
-        // Render Events with Registration Links
         window.renderEvents = function() {
             const container = document.getElementById('eventsContainer');
             container.innerHTML = '';
@@ -598,7 +628,6 @@
                     <h4 class="font-bold text-gray-800 text-base">${ev.title}</h4>
                     <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
 
-                    <!-- Registration Dynamic Link Generator Box -->
                     <div class="bg-gray-50 p-2.5 rounded-xl border space-y-1">
                         <div class="flex justify-between items-center text-[11px] font-bold text-gray-600">
                             <span><i class="fa-solid fa-link text-vbdGreen"></i> ফর্ম রেজিস্ট্রেশন লিঙ্ক:</span>
@@ -690,7 +719,6 @@
             });
         };
 
-        // Tabs Toggle
         window.switchTab = function(tabName) {
             document.getElementById('viewEventsTab').classList.add('hidden');
             document.getElementById('viewRegistrationsTab').classList.add('hidden');
@@ -712,7 +740,6 @@
             }
         };
 
-        // Modal Control
         window.openCreateEventModal = function() {
             document.getElementById('createEventModal').classList.remove('hidden');
             initMapPicker();
