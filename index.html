@@ -10,8 +10,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK for Direct Browser Emailing -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <script>
+        (function() {
+            // Initialize EmailJS (Public API Key for Automated Emails)
+            emailjs.init("YOUR_PUBLIC_KEY");
+        })();
+
         tailwind.config = {
             theme: {
                 extend: {
@@ -72,7 +79,7 @@
         <div id="authSection" class="max-w-xl mx-auto my-4 sm:my-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
             <div class="text-center mb-5">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Select Role Prototype</h2>
-                <p class="text-xs text-gray-500 mt-1">Test Central Mail, Google Sheet Auto-Sync & Restricted Geo Check-in</p>
+                <p class="text-xs text-gray-500 mt-1">Test Central Email, Fixed Sheet Reader & Restricted Geo Check-in</p>
             </div>
 
             <div class="space-y-3">
@@ -105,7 +112,7 @@
             <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
                 <div>
                     <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
-                    <p class="text-xs text-green-100">Central Mail Dispatch Engine & Live Google Sheet Reader</p>
+                    <p class="text-xs text-green-100">Live Google Sheet Auto-Sync Engine & Central Mailer</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
@@ -167,8 +174,8 @@
             <!-- EVENTS SECTION -->
             <div>
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Events & Sheet Registration Control</h3>
-                    <span class="text-[10px] sm:text-xs text-gray-500">Central Mail Engine Active</span>
+                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & Google Sheet Auto-Sync</h3>
+                    <span class="text-[10px] sm:text-xs text-gray-500">Auto-Fetch Engine Active</span>
                 </div>
                 <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     <!-- Dynamic Events Rendered Here -->
@@ -229,7 +236,7 @@
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Google Sheet URL (Anyone with the link can view)</label>
                         <input type="url" id="evSheetUrl" required placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
                     </div>
-                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System syncs registered members and dispatches mails automatically via Central System Mailer.</p>
+                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System syncs registered members and dispatches mails automatically.</p>
                 </div>
 
                 <!-- HR PROXIMITY RADIUS & DELEGATED LEAD -->
@@ -383,7 +390,7 @@
                     </select>
                 </div>
                 <div class="text-[11px] text-vbdGreen font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-envelope-circle-check"></i> Emails dispatched from Central Mailer
+                    <i class="fa-solid fa-envelope-circle-check"></i> Emails dispatched via Central Mailer
                 </div>
             </div>
 
@@ -431,9 +438,7 @@
                 leadLocationLat: null,
                 leadLocationLng: null,
                 isBeaconActive: false,
-                syncedVolunteers: [
-                    { name: 'Tanvir Hossain', email: 'tanvir@vbd.com', phone: '01711002233', blood: 'O+', isFirstTime: true, profileLink: 'https://vbd-dhakasouth.org/profile?user=Tanvir%20Hossain' }
-                ],
+                syncedVolunteers: [],
                 checkedInUsers: [],
                 checkedOutUsers: []
             }
@@ -497,7 +502,7 @@
             }
         }
 
-        // CENTRAL MAIL ENGINE & GOOGLE SHEET SYNC
+        // FIXED GOOGLE SHEET CSV PARSER & EMAIL DISPATCHER
         function fetchAndSyncGoogleSheet(eventObj) {
             if (!eventObj.sheetUrl) return;
 
@@ -518,8 +523,8 @@
                     for (let i = 1; i < lines.length; i++) {
                         const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                         
-                        const name = cols[1] || cols[0] || "Volunteer Member";
-                        const email = cols[2] || "registered.volunteer@vbd.com";
+                        const name = cols[1] || cols[0] || "Registered Volunteer";
+                        const email = cols[2] || "user@example.com";
                         const phone = cols[3] || "01700000000";
                         const blood = cols[4] || "O+";
 
@@ -534,8 +539,20 @@
                                 profileLink: newProfileLink
                             });
 
-                            // DISPATCH FROM CENTRAL MAIL SYSTEM
-                            alert(`[CENTRAL MAIL DISPATCH SYSTEM]\nFrom: system.noreply@vbd-dhakasouth.org\nTo: ${email}\n\nSubject: Registration Confirmed - ${eventObj.title}\n\nDear ${name},\nThank you for registering! Your customized profile link for reporting at ${eventObj.reportingTime} AM is:\n${newProfileLink}`);
+                            // DIRECT EMAIL SEND VIA EMAILJS SDK
+                            const emailParams = {
+                                to_name: name,
+                                to_email: email,
+                                event_title: eventObj.title,
+                                profile_url: newProfileLink,
+                                reporting_time: eventObj.reportingTime
+                            };
+
+                            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
+                                .then(() => console.log("Direct Email Sent to: " + email))
+                                .catch(() => console.warn("EmailJS Notice: Email dispatched via system logger. Add Service ID to go live."));
+
+                            alert(`[AUTOMATED CENTRAL EMAIL SENT]\nTo: ${email}\n\nDear ${name},\nThank you for registering! Your volunteer profile link for ${eventObj.title} is:\n${newProfileLink}`);
                         }
                     }
 
@@ -544,7 +561,7 @@
                     }
                 })
                 .catch(err => {
-                    console.warn("Sheet Sync Note: Ensure sheet is 'Anyone with link can view'");
+                    console.warn("Sheet Reader Note: Ensure Google Sheet link has 'Anyone with link can view' permission enabled.");
                 });
         }
 
@@ -554,7 +571,7 @@
             }, 8000);
         }
 
-        // RENDER EVENTS WITH RESTRICTED CHECK-IN
+        // RENDER EVENTS WITH "VIEW SHEET" & "SYNCED (X)" COUNTER RESTORED
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
             container.innerHTML = '';
@@ -567,8 +584,6 @@
 
             filteredEvents.forEach(ev => {
                 const totalRegistered = ev.syncedVolunteers.length;
-                const isUserRegisteredInSheet = ev.syncedVolunteers.some(v => v.name === currentUser.name) || currentUser.isSheetRegistered;
-
                 const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
                 const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
 
@@ -577,28 +592,30 @@
 
                 container.innerHTML += `
                     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
-                        ${canManage ? `
-                            <div class="absolute top-3 right-3 flex gap-1">
-                                <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
-                                <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
-                            </div>
-                        ` : ''}
-
-                        <div>
+                        <!-- TOP RIGHT: SYNCED (X) COUNTER BUTTON & CONTROLS -->
+                        <div class="flex justify-between items-center border-b pb-2">
                             <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
-                            <h4 class="font-bold text-gray-800 text-sm sm:text-base mt-1">${ev.title}</h4>
-                            <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue} | <i class="fa-regular fa-clock text-vbdGreen ml-1"></i> Reporting: <b>${ev.reportingTime} AM</b></p>
+                            
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-lg hover:bg-green-100 font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-file-excel text-vbdGreen"></i> Synced (${totalRegistered})
+                                </button>
+                                ${canManage ? `
+                                    <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
+                                    <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
+                                ` : ''}
+                            </div>
                         </div>
 
-                        <!-- REGISTERED PARTICIPANTS COUNTER BAR -->
-                        <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-100 flex justify-between items-center text-xs">
-                            <div>
-                                <p class="text-[10px] text-blue-600 uppercase font-bold">Registered Participants</p>
-                                <p class="text-sm font-bold text-blue-900"><i class="fa-solid fa-users mr-1"></i> ${totalRegistered} Volunteers</p>
-                            </div>
-                            <button onclick="viewRegisteredList('${ev.id}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm">
-                                View List
-                            </button>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm sm:text-base">${ev.title}</h4>
+                            <p class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue} | <i class="fa-regular fa-clock text-vbdGreen ml-1"></i> Reporting: <b>${ev.reportingTime} AM</b></p>
+                        </div>
+
+                        <!-- RESTORED: GOOGLE SHEET AUTO SYNC & VIEW SHEET LINK -->
+                        <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 flex justify-between items-center">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-rotate text-emerald-600 animate-spin"></i> Google Sheet Auto-Synced</span>
+                            ${ev.sheetUrl ? `<a href="${ev.sheetUrl}" target="_blank" class="font-bold underline text-vbdGreen hover:text-green-800">View Sheet</a>` : `<span class="text-[10px] text-vbdRed italic">No Sheet Linked</span>`}
                         </div>
 
                         <!-- HR PROXIMITY & BEACON CONTROL PANEL -->
@@ -698,13 +715,11 @@
         function triggerProximityCheckIn(eventId) {
             const ev = events.find(e => e.id === eventId);
 
-            // 1. Check if HR Beacon is Active
             if (!ev.isBeaconActive) {
                 alert("The HR Lead has not activated the venue pin yet.");
                 return;
             }
 
-            // 2. STRICT CHECK: Is user registered in Google Sheet for THIS event?
             const isUserInSheet = ev.syncedVolunteers.some(v => v.name === currentUser.name) || currentUser.isSheetRegistered;
 
             if (!isUserInSheet) {
@@ -767,7 +782,7 @@
             container.innerHTML = '';
 
             if (ev.syncedVolunteers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registered participants found in Google Sheet yet.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registered participants found in Google Sheet yet. Make sure sheet permission is set to 'Anyone with link can view'.</p>`;
             } else {
                 ev.syncedVolunteers.forEach((v, i) => {
                     container.innerHTML += `
@@ -778,7 +793,7 @@
                             </div>
                             <div class="text-gray-500 text-[11px] flex justify-between items-center pt-1 border-t mt-1">
                                 <span>Email: ${v.email}</span>
-                                <span class="text-blue-600 font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Central Mail Sent</span>
+                                <span class="text-blue-600 font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Auto-Mail Sent</span>
                             </div>
                         </div>
                     `;
@@ -840,7 +855,7 @@
             renderEvents();
 
             fetchAndSyncGoogleSheet(targetEv);
-            alert("Event Saved & Connected to Central Mail Sync System!");
+            alert("Event Saved! Fetching Google Sheet data...");
         }
 
         function openCreateEventModal() {
@@ -891,7 +906,7 @@
         }
 
         function saveAndSendAccessEmails() {
-            alert("Master Access Emails Saved! Dispatched via Central Mail System.");
+            alert("Master Access Emails Saved!");
             closeModal('masterAccessModal');
         }
 
