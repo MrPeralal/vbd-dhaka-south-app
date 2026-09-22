@@ -72,7 +72,7 @@
         <div id="authSection" class="max-w-xl mx-auto my-4 sm:my-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
             <div class="text-center mb-5">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Select Role Prototype</h2>
-                <p class="text-xs text-gray-500 mt-1">Test HR Proximity Check-in & Hierarchy Management</p>
+                <p class="text-xs text-gray-500 mt-1">Test Central Mail, Google Sheet Auto-Sync & Restricted Geo Check-in</p>
             </div>
 
             <div class="space-y-3">
@@ -86,9 +86,14 @@
                     <span class="text-[9px] sm:text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">HR Lead</span>
                 </button>
 
-                <button onclick="loginAs('general_volunteer')" class="w-full p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user mr-2"></i> General Volunteer / Participant</span>
-                    <span class="text-[9px] sm:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Basic Access</span>
+                <button onclick="loginAs('registered_volunteer')" class="w-full p-3 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
+                    <span><i class="fa-solid fa-user-check mr-2"></i> Tanvir Hossain (Registered Participant)</span>
+                    <span class="text-[9px] sm:text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded">Allowed Check-In</span>
+                </button>
+
+                <button onclick="loginAs('unregistered_volunteer')" class="w-full p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
+                    <span><i class="fa-solid fa-user-xmark mr-2"></i> Unregistered User (Didn't fill Google Form)</span>
+                    <span class="text-[9px] sm:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Blocked Check-In</span>
                 </button>
             </div>
         </div>
@@ -100,7 +105,7 @@
             <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
                 <div>
                     <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
-                    <p class="text-xs text-green-100">Manage Upazila Units, Events, HR Delegation & Google Sheet Sync</p>
+                    <p class="text-xs text-green-100">Central Mail Dispatch Engine & Live Google Sheet Reader</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
@@ -130,8 +135,8 @@
                     <div id="profileAvatar" class="w-14 h-14 bg-vbdGreen text-white rounded-2xl flex items-center justify-center font-bold text-2xl shadow-sm">T</div>
                     <div>
                         <h3 id="profileNameDisplay" class="font-bold text-slate-800 text-lg">Tanvir Hossain</h3>
-                        <p id="profileDetailDisplay" class="text-xs text-slate-500">DSCC Unit | General Volunteer | O+</p>
-                        <p class="text-[10px] text-vbdGreen font-semibold mt-0.5"><i class="fa-solid fa-circle-check"></i> Profile Active & Auto-Synced</p>
+                        <p id="profileDetailDisplay" class="text-xs text-slate-500">Dhaka South City Unit | O+</p>
+                        <p id="profileStatusBadge" class="text-[10px] text-vbdGreen font-semibold mt-0.5"><i class="fa-solid fa-circle-check"></i> Registered Participant (Sheet Verified)</p>
                     </div>
                 </div>
                 <button onclick="openEditProfileModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border flex items-center gap-1.5">
@@ -162,8 +167,8 @@
             <!-- EVENTS SECTION -->
             <div>
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & Google Sheet Auto-Sync</h3>
-                    <span class="text-[10px] sm:text-xs text-gray-500">Live Fetch Enabled</span>
+                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Events & Sheet Registration Control</h3>
+                    <span class="text-[10px] sm:text-xs text-gray-500">Central Mail Engine Active</span>
                 </div>
                 <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     <!-- Dynamic Events Rendered Here -->
@@ -208,6 +213,11 @@
                             <input type="text" id="evVenue" required placeholder="e.g. Manikmia Avinew" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                         </div>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Reporting Time *</label>
+                        <input type="time" id="evReportingTime" value="09:00" required class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                    </div>
                 </div>
 
                 <!-- GOOGLE SHEET PUBLIC RESPONSE LINK INTEGRATION -->
@@ -217,9 +227,9 @@
                     </h4>
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Google Sheet URL (Anyone with the link can view)</label>
-                        <input type="url" id="evSheetUrl" required placeholder="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
+                        <input type="url" id="evSheetUrl" required placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
                     </div>
-                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System reads rows automatically from this sheet to generate profiles.</p>
+                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System syncs registered members and dispatches mails automatically via Central System Mailer.</p>
                 </div>
 
                 <!-- HR PROXIMITY RADIUS & DELEGATED LEAD -->
@@ -248,7 +258,7 @@
 
                 <div class="pt-2 flex gap-2">
                     <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700">Save & Fetch Sheet Data</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700">Save & Connect Sheet</button>
                 </div>
             </form>
         </div>
@@ -326,33 +336,32 @@
         </div>
     </div>
 
-    <!-- AUTO-SYNCED REGISTERED RESPONSES LIST MODAL -->
+    <!-- REGISTERED PARTICIPANTS LIST MODAL -->
     <div id="registeredListModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
                 <div>
-                    <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Google Sheet Synced Volunteers</h3>
-                    <p class="text-[11px] text-vbdGreen"><i class="fa-solid fa-arrows-rotate animate-spin"></i> Live Sheet Auto-Sync Active</p>
+                    <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Registered Participants List</h3>
+                    <p class="text-[11px] text-vbdGreen"><i class="fa-solid fa-shield-halved"></i> Only listed members allowed for Geo Check-in</p>
                 </div>
                 <div class="flex gap-2">
                     <button id="btnExportExcel" class="px-3 py-1.5 bg-vbdGreen text-white rounded-lg text-xs font-bold hover:bg-green-700 flex items-center gap-1">
-                        <i class="fa-solid fa-file-excel"></i> Export Sheet CSV
+                        <i class="fa-solid fa-file-excel"></i> Export CSV
                     </button>
                     <button onclick="closeModal('registeredListModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
             </div>
             
             <div id="registeredListContent" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                <!-- Auto Synced Responses Rendered Here -->
+                <!-- Registered Participants Rendered Here -->
             </div>
         </div>
     </div>
 
-    <!-- MASTER ACCESS SHEET MODAL (RESTORED EXACTLY AS SCREENSHOT) -->
+    <!-- MASTER ACCESS SHEET MODAL -->
     <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] flex flex-col relative">
             
-            <!-- Modal Header -->
             <div class="flex justify-between items-start border-b pb-3">
                 <div>
                     <h3 class="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
@@ -364,7 +373,6 @@
                 <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600 p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <!-- Active Board Tenure Bar -->
             <div class="bg-gray-50 border rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div class="flex items-center space-x-2 text-xs">
                     <span class="font-bold text-gray-700">Active Board Tenure Year:</span>
@@ -375,173 +383,33 @@
                     </select>
                 </div>
                 <div class="text-[11px] text-vbdGreen font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved"></i> Emails get auto-access links via Gmail
+                    <i class="fa-solid fa-envelope-circle-check"></i> Emails dispatched from Central Mailer
                 </div>
             </div>
 
-            <!-- Scrollable Content Section -->
             <div class="flex-1 overflow-y-auto space-y-4 pr-1 modal-scroll">
-
-                <!-- 1. District Board Member Access (6 Positions) -->
                 <div class="border border-red-200 bg-red-50/40 rounded-2xl p-4 space-y-3">
                     <h4 class="font-bold text-vbdRed text-xs sm:text-sm flex items-center gap-1.5">
                         <i class="fa-solid fa-crown text-xs"></i> District Board Member Access (6 Positions)
                     </h4>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Vice President Email</label>
-                            <input type="email" value="vp.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">General Secretary Email</label>
-                            <input type="email" value="gs.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">HR Secretary Email</label>
-                            <input type="email" value="hr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">PR Secretary Email</label>
-                            <input type="email" value="pr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Finance Secretary Email</label>
-                            <input type="email" value="finance.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-gray-600 mb-1">Logistics Secretary Email</label>
-                            <input type="email" value="logistics.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-vbdRed bg-white">
-                        </div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">Vice President Email</label><input type="email" value="vp.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">General Secretary Email</label><input type="email" value="gs.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">HR Secretary Email</label><input type="email" value="hr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">PR Secretary Email</label><input type="email" value="pr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">Finance Secretary Email</label><input type="email" value="finance.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
+                        <div><label class="block text-[11px] text-gray-600 mb-1">Logistics Secretary Email</label><input type="email" value="logistics.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
                     </div>
                 </div>
-
-                <!-- 2. Upazila Board Members Access (5 Positions per Upazila) -->
-                <div class="space-y-3">
-                    <h4 class="font-bold text-vbdGreen text-xs sm:text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-building-flag text-xs"></i> Upazila Board Members Access (5 Positions per Upazila)
-                    </h4>
-
-                    <!-- 1. Dhaka South City Corporation Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">1. Dhaka South City Corporation Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.dsc@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Keraniganj Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">2. Keraniganj Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.keraniganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Dohar Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">3. Dohar Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.dohar@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4. Nababganj Upazila Board -->
-                    <div class="bg-gray-50 border rounded-2xl p-3.5 space-y-2.5">
-                        <h5 class="font-bold text-gray-800 text-xs">4. Nababganj Upazila Board</h5>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">President</label>
-                                <input type="email" value="pres.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">General Secretary</label>
-                                <input type="email" value="gs.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">HR Secretary</label>
-                                <input type="email" value="hr.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Project Secretary</label>
-                                <input type="email" value="proj.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[10px] text-gray-500 mb-0.5">Finance Officer</label>
-                                <input type="email" value="fin.nababganj@vbd.com" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white">
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
             </div>
 
-            <!-- Footer Action Buttons -->
             <div class="pt-3 border-t flex justify-end gap-2">
-                <button type="button" onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button type="button" onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700 flex items-center gap-2">
+                <button type="button" onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="button" onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700 flex items-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Save & Send Access Mails
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -556,13 +424,16 @@
                 title: 'Youth Awareness Rally-2026',
                 upazila: 'Dhaka South City',
                 venue: 'Manikmia Avinew',
+                reportingTime: '09:00',
                 radius: 50,
                 activeLead: 'Sabbir Ahmed (HR Lead)',
                 sheetUrl: '',
                 leadLocationLat: null,
                 leadLocationLng: null,
                 isBeaconActive: false,
-                syncedVolunteers: [],
+                syncedVolunteers: [
+                    { name: 'Tanvir Hossain', email: 'tanvir@vbd.com', phone: '01711002233', blood: 'O+', isFirstTime: true, profileLink: 'https://vbd-dhakasouth.org/profile?user=Tanvir%20Hossain' }
+                ],
                 checkedInUsers: [],
                 checkedOutUsers: []
             }
@@ -574,8 +445,10 @@
                 currentUser = { name: 'District President', role: 'district_president', designation: 'President (District Board)', upazila: 'Dhaka South Central' };
             } else if (role === 'hr_lead') {
                 currentUser = { name: 'Sabbir Ahmed (HR Lead)', role: 'hr_lead', designation: 'HR Secretary / In-Charge', upazila: 'Dhaka South City' };
+            } else if (role === 'registered_volunteer') {
+                currentUser = { name: 'Tanvir Hossain', role: 'general_volunteer', designation: 'Registered Volunteer', upazila: 'Dhaka South City', isSheetRegistered: true, stats: { attended: 4, late: 1, missed: 0, hours: 12 } };
             } else {
-                currentUser = { name: 'Tanvir Hossain', role: 'general_volunteer', designation: 'General Member', upazila: 'Dhaka South City', stats: { attended: 4, late: 1, missed: 0, hours: 12 } };
+                currentUser = { name: 'Unregistered User', role: 'general_volunteer', designation: 'General Visitor (Not in Sheet)', upazila: 'Dhaka South City', isSheetRegistered: false, stats: { attended: 0, late: 0, missed: 0, hours: 0 } };
             }
 
             document.getElementById('authSection').classList.add('hidden');
@@ -616,6 +489,7 @@
                 volProfile.classList.remove('hidden');
                 btnMaster.classList.add('hidden');
 
+                document.getElementById('profileNameDisplay').innerText = currentUser.name;
                 document.getElementById('statAttended').innerText = currentUser.stats.attended;
                 document.getElementById('statLate').innerText = currentUser.stats.late;
                 document.getElementById('statMissed').innerText = currentUser.stats.missed;
@@ -623,35 +497,27 @@
             }
         }
 
-        // GOOGLE SHEET CSV PARSER & EMAIL DISPATCH SIMULATOR
+        // CENTRAL MAIL ENGINE & GOOGLE SHEET SYNC
         function fetchAndSyncGoogleSheet(eventObj) {
             if (!eventObj.sheetUrl) return;
 
-            // Extract Google Sheet ID from standard edit/view link
             const matches = eventObj.sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            if (!matches || !matches[1]) {
-                console.warn("Invalid Google Sheet URL format.");
-                return;
-            }
+            if (!matches || !matches[1]) return;
 
             const sheetId = matches[1];
             const csvExportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
             fetch(csvExportUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error("Network response was not ok");
-                    return res.text();
-                })
+                .then(res => res.text())
                 .then(csvText => {
                     const lines = csvText.split('\n').filter(line => line.trim() !== '');
-                    if (lines.length <= 1) return; // Only headers or empty
+                    if (lines.length <= 1) return;
 
                     let newMemberCount = 0;
                     
                     for (let i = 1; i < lines.length; i++) {
                         const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                         
-                        // Assumes standard form structure: Timestamp, Name, Email, Phone, Blood Group
                         const name = cols[1] || cols[0] || "Volunteer Member";
                         const email = cols[2] || "registered.volunteer@vbd.com";
                         const phone = cols[3] || "01700000000";
@@ -668,8 +534,8 @@
                                 profileLink: newProfileLink
                             });
 
-                            // Display Instant Email Dispatch Notification
-                            alert(`[AUTO-MAIL DISPATCHED VIA HR]\nTo: ${email}\n\nDear ${name},\nThank you for registering for ${eventObj.title}!\nYour volunteer profile link has been generated:\n${newProfileLink}`);
+                            // DISPATCH FROM CENTRAL MAIL SYSTEM
+                            alert(`[CENTRAL MAIL DISPATCH SYSTEM]\nFrom: system.noreply@vbd-dhakasouth.org\nTo: ${email}\n\nSubject: Registration Confirmed - ${eventObj.title}\n\nDear ${name},\nThank you for registering! Your customized profile link for reporting at ${eventObj.reportingTime} AM is:\n${newProfileLink}`);
                         }
                     }
 
@@ -678,21 +544,17 @@
                     }
                 })
                 .catch(err => {
-                    console.warn("Google Sheet Sync Note: Ensure sheet is set to 'Anyone with the link can view'.");
+                    console.warn("Sheet Sync Note: Ensure sheet is 'Anyone with link can view'");
                 });
         }
 
         function startBackgroundSheetSyncEngine() {
             setInterval(() => {
-                events.forEach(ev => {
-                    if (ev.sheetUrl) {
-                        fetchAndSyncGoogleSheet(ev);
-                    }
-                });
+                events.forEach(ev => fetchAndSyncGoogleSheet(ev));
             }, 8000);
         }
 
-        // RENDER EVENTS WITH HR PROXIMITY LOGIC
+        // RENDER EVENTS WITH RESTRICTED CHECK-IN
         function renderEvents() {
             const container = document.getElementById('eventsContainer');
             container.innerHTML = '';
@@ -704,7 +566,9 @@
             });
 
             filteredEvents.forEach(ev => {
-                const isRegistered = ev.syncedVolunteers.some(v => v.name === currentUser.name);
+                const totalRegistered = ev.syncedVolunteers.length;
+                const isUserRegisteredInSheet = ev.syncedVolunteers.some(v => v.name === currentUser.name) || currentUser.isSheetRegistered;
+
                 const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
                 const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
 
@@ -715,7 +579,6 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
                         ${canManage ? `
                             <div class="absolute top-3 right-3 flex gap-1">
-                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-md hover:bg-green-100 font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Synced (${ev.syncedVolunteers.length})</button>
                                 <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
                                 <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
                             </div>
@@ -724,13 +587,18 @@
                         <div>
                             <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
                             <h4 class="font-bold text-gray-800 text-sm sm:text-base mt-1">${ev.title}</h4>
-                            <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
+                            <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue} | <i class="fa-regular fa-clock text-vbdGreen ml-1"></i> Reporting: <b>${ev.reportingTime} AM</b></p>
                         </div>
 
-                        <!-- GOOGLE SHEET AUTO SYNC STATUS BAR -->
-                        <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 flex justify-between items-center">
-                            <span><i class="fa-solid fa-arrows-rotate text-emerald-600 animate-spin mr-1"></i> Google Sheet Auto-Synced</span>
-                            ${ev.sheetUrl ? `<a href="${ev.sheetUrl}" target="_blank" class="font-bold underline text-vbdGreen">View Sheet</a>` : `<span class="text-xs text-vbdRed font-medium">No Link Attached</span>`}
+                        <!-- REGISTERED PARTICIPANTS COUNTER BAR -->
+                        <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-100 flex justify-between items-center text-xs">
+                            <div>
+                                <p class="text-[10px] text-blue-600 uppercase font-bold">Registered Participants</p>
+                                <p class="text-sm font-bold text-blue-900"><i class="fa-solid fa-users mr-1"></i> ${totalRegistered} Volunteers</p>
+                            </div>
+                            <button onclick="viewRegisteredList('${ev.id}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 shadow-sm">
+                                View List
+                            </button>
                         </div>
 
                         <!-- HR PROXIMITY & BEACON CONTROL PANEL -->
@@ -760,9 +628,9 @@
 
                             ${!isCheckedIn ? `
                                 <button onclick="triggerProximityCheckIn('${ev.id}')" class="w-full py-2 ${ev.isBeaconActive ? 'bg-vbdGreen hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-bold rounded-lg transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-location-crosshairs"></i> Check-In (Within ${ev.radius}m)
+                                    <i class="fa-solid fa-location-crosshairs"></i> Geo Check-In (Within ${ev.radius}m)
                                 </button>
-                                ${!ev.isBeaconActive ? `<p class="text-[9px] text-center text-vbdRed font-medium">* Waiting for HR Lead to activate pin</p>` : ''}
+                                ${!ev.isBeaconActive ? `<p class="text-[9px] text-center text-vbdRed font-medium">* Pin activates before ${ev.reportingTime} AM</p>` : ''}
                             ` : !isCheckedOut ? `
                                 <div class="space-y-1">
                                     <div class="bg-green-100 text-vbdGreen p-1.5 rounded text-center font-bold text-[11px]">
@@ -797,7 +665,7 @@
                 ev.leadLocationLng = pos.coords.longitude;
                 ev.isBeaconActive = true;
 
-                alert(`Venue Pin Activated successfully!\nVolunteers can now check-in within ${ev.radius} meters of your location.`);
+                alert(`Venue Pin Activated successfully!\nRegistered volunteers can now check-in within ${ev.radius} meters of your location.`);
                 renderEvents();
             }, () => {
                 alert("Please enable GPS permissions on your device.");
@@ -826,12 +694,21 @@
             renderEvents();
         }
 
-        // VOLUNTEER PROXIMITY CHECK-IN LOGIC
+        // VOLUNTEER PROXIMITY CHECK-IN LOGIC WITH STRICT SHEET REGISTRATION CHECK
         function triggerProximityCheckIn(eventId) {
             const ev = events.find(e => e.id === eventId);
 
+            // 1. Check if HR Beacon is Active
             if (!ev.isBeaconActive) {
                 alert("The HR Lead has not activated the venue pin yet.");
+                return;
+            }
+
+            // 2. STRICT CHECK: Is user registered in Google Sheet for THIS event?
+            const isUserInSheet = ev.syncedVolunteers.some(v => v.name === currentUser.name) || currentUser.isSheetRegistered;
+
+            if (!isUserInSheet) {
+                alert("STRICT ACCESS DENIED!\n\nYour name is not found in the Google Sheet Registration List for this event. Only registered participants can check-in.");
                 return;
             }
 
@@ -849,7 +726,7 @@
                     if (!ev.checkedInUsers.includes(currentUser.name)) {
                         ev.checkedInUsers.push(currentUser.name);
                     }
-                    alert(`Check-In Successful!\nYou are within ${Math.round(distance)} meters of HR / Venue Lead (${ev.activeLead}).`);
+                    alert(`Check-In Verified!\nYou are within ${Math.round(distance)} meters of HR Lead (${ev.activeLead}). Attendance marked.`);
                     renderEvents();
                 } else {
                     alert(`Check-In Failed!\nYou are ${Math.round(distance)} meters away from HR / Lead. You must be within ${ev.radius} meters.`);
@@ -878,10 +755,10 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // VIEW AUTO-SYNCED VOLUNTEER RESPONSES FROM GOOGLE SHEET
+        // VIEW REGISTERED PARTICIPANTS LIST MODAL
         function viewRegisteredList(eventId) {
             const ev = events.find(e => e.id === eventId);
-            document.getElementById('regModalTitle').innerText = `Google Sheet Synced: ${ev.title}`;
+            document.getElementById('regModalTitle').innerText = `Registered Participants: ${ev.title}`;
             
             const btnExport = document.getElementById('btnExportExcel');
             btnExport.onclick = () => exportToCSV(ev);
@@ -890,18 +767,18 @@
             container.innerHTML = '';
 
             if (ev.syncedVolunteers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No data synced from Google Sheet yet. Make sure sheet is shared to 'Anyone with link'.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registered participants found in Google Sheet yet.</p>`;
             } else {
                 ev.syncedVolunteers.forEach((v, i) => {
                     container.innerHTML += `
                         <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-1">
                             <div class="flex justify-between font-bold text-gray-800">
-                                <span>${i + 1}. ${v.name} (${v.blood}) ${v.isFirstTime ? '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 ml-1">Auto-Created Profile</span>' : ''}</span>
+                                <span>${i + 1}. ${v.name} (${v.blood})</span>
                                 <span class="text-vbdGreen">${v.phone}</span>
                             </div>
                             <div class="text-gray-500 text-[11px] flex justify-between items-center pt-1 border-t mt-1">
                                 <span>Email: ${v.email}</span>
-                                <span class="text-vbdGreen font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Auto-Mail Dispatched</span>
+                                <span class="text-blue-600 font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Central Mail Sent</span>
                             </div>
                         </div>
                     `;
@@ -913,20 +790,20 @@
 
         function exportToCSV(ev) {
             if (ev.syncedVolunteers.length === 0) {
-                alert("No synced response data to export!");
+                alert("No registered data to export!");
                 return;
             }
 
-            let csv = "SL,Name,Email,Phone,Blood Group,Is New Member,Profile Link\n";
+            let csv = "SL,Name,Email,Phone,Blood Group,Profile Link\n";
             ev.syncedVolunteers.forEach((v, i) => {
-                csv += `"${i + 1}","${v.name}","${v.email}","${v.phone}","${v.blood}","${v.isFirstTime ? 'Yes' : 'No'}","${v.profileLink}"\n`;
+                csv += `"${i + 1}","${v.name}","${v.email}","${v.phone}","${v.blood}","${v.profileLink}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${ev.title}_Synced_Volunteers.csv`;
+            a.download = `${ev.title}_Registered_Participants.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -938,6 +815,7 @@
             const title = document.getElementById('evTitle').value;
             const upazila = document.getElementById('evUpazila').value;
             const venue = document.getElementById('evVenue').value;
+            const reportingTime = document.getElementById('evReportingTime').value;
             const sheetUrl = document.getElementById('evSheetUrl').value;
             const radius = parseInt(document.getElementById('evRadius').value);
             const activeLead = document.getElementById('evLead').value;
@@ -946,11 +824,12 @@
             if (editId) {
                 targetEv = events.find(e => e.id === editId);
                 targetEv.title = title; targetEv.upazila = upazila; targetEv.venue = venue;
-                targetEv.sheetUrl = sheetUrl; targetEv.radius = radius; targetEv.activeLead = activeLead;
+                targetEv.reportingTime = reportingTime; targetEv.sheetUrl = sheetUrl; 
+                targetEv.radius = radius; targetEv.activeLead = activeLead;
             } else {
                 targetEv = {
                     id: 'ev_' + Date.now(),
-                    title, upazila, venue, sheetUrl, radius, activeLead,
+                    title, upazila, venue, reportingTime, sheetUrl, radius, activeLead,
                     leadLocationLat: null, leadLocationLng: null, isBeaconActive: false,
                     syncedVolunteers: [], checkedInUsers: [], checkedOutUsers: []
                 };
@@ -960,9 +839,8 @@
             closeModal('eventModal');
             renderEvents();
 
-            // Trigger Immediate Fetch
             fetchAndSyncGoogleSheet(targetEv);
-            alert("Event Saved! Fetching Google Sheet data...");
+            alert("Event Saved & Connected to Central Mail Sync System!");
         }
 
         function openCreateEventModal() {
@@ -977,6 +855,7 @@
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evUpazila').value = ev.upazila;
             document.getElementById('evVenue').value = ev.venue;
+            document.getElementById('evReportingTime').value = ev.reportingTime || '09:00';
             document.getElementById('evSheetUrl').value = ev.sheetUrl || '';
             document.getElementById('evRadius').value = ev.radius;
             document.getElementById('evLead').value = ev.activeLead;
@@ -1002,7 +881,7 @@
             const unit = document.getElementById('editUnit').value;
 
             document.getElementById('profileNameDisplay').innerText = name;
-            document.getElementById('profileDetailDisplay').innerText = `${unit} Unit | General Volunteer | ${blood}`;
+            document.getElementById('profileDetailDisplay').innerText = `${unit} Unit | ${blood}`;
             closeModal('editProfileModal');
             alert("Profile Customized Successfully!");
         }
@@ -1012,7 +891,7 @@
         }
 
         function saveAndSendAccessEmails() {
-            alert("Master Access Emails Saved! Access links sent to respective Gmail accounts.");
+            alert("Master Access Emails Saved! Dispatched via Central Mail System.");
             closeModal('masterAccessModal');
         }
 
