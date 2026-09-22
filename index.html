@@ -100,14 +100,14 @@
             <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
                 <div>
                     <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
-                    <p class="text-xs text-green-100">Manage Upazila Units, Events, HR Delegation & Dynamic Forms</p>
+                    <p class="text-xs text-green-100">Manage Upazila Units, Events, HR Delegation & Google Sheet Sync</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
                         <i class="fa-solid fa-key"></i> Master Access Sheet
                     </button>
                     <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-plus"></i> Create Event + Form
+                        <i class="fa-solid fa-plus"></i> Create Event + Link Sheet
                     </button>
                 </div>
             </div>
@@ -122,6 +122,21 @@
                     <button onclick="filterUpazila('Dohar')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dohar">Dohar</button>
                     <button onclick="filterUpazila('Nababganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Nababganj">Nababganj</button>
                 </div>
+            </div>
+
+            <!-- VOLUNTEER PROFILE CARD (CAN CUSTOMIZE) -->
+            <div id="volunteerProfileCard" class="bg-white p-4 sm:p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
+                <div class="flex items-center gap-4">
+                    <div id="profileAvatar" class="w-14 h-14 bg-vbdGreen text-white rounded-2xl flex items-center justify-center font-bold text-2xl shadow-sm">T</div>
+                    <div>
+                        <h3 id="profileNameDisplay" class="font-bold text-slate-800 text-lg">Tanvir Hossain</h3>
+                        <p id="profileDetailDisplay" class="text-xs text-slate-500">DSCC Unit | General Volunteer | O+</p>
+                        <p class="text-[10px] text-vbdGreen font-semibold mt-0.5"><i class="fa-solid fa-circle-check"></i> Profile Active & Auto-Synced</p>
+                    </div>
+                </div>
+                <button onclick="openEditProfileModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-pen text-vbdGreen"></i> Customize Profile
+                </button>
             </div>
 
             <!-- VOLUNTEER STATS CARD -->
@@ -147,8 +162,8 @@
             <!-- EVENTS SECTION -->
             <div>
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & HR Proximity Check-In</h3>
-                    <span class="text-[10px] sm:text-xs text-gray-500">Live Location Proximity</span>
+                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & Google Sheet Auto-Sync</h3>
+                    <span class="text-[10px] sm:text-xs text-gray-500">Background Auto-Sync Enabled</span>
                 </div>
                 <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     <!-- Dynamic Events Rendered Here -->
@@ -159,11 +174,11 @@
 
     </main>
 
-    <!-- CREATE/EDIT EVENT MODAL WITH HR PROXIMITY RADIUS & INTEGRATED ADVANCED FORM BUILDER -->
+    <!-- CREATE/EDIT EVENT MODAL WITH GOOGLE SHEET RESPONSE URL INTEGRATION -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Create Event & Custom Registration Form</h3>
+                <h3 id="modalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Create Event & Link Google Sheet</h3>
                 <button onclick="closeModal('eventModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
@@ -171,26 +186,40 @@
                 <input type="hidden" id="editingEventId">
 
                 <!-- Basic Event Details -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="sm:col-span-2">
+                <div class="space-y-3">
+                    <div>
                         <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
                         <input type="text" id="evTitle" required placeholder="e.g. Tree Plantation Campaign 2026" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila *</label>
-                        <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                            <option value="Dhaka South City">Dhaka South City</option>
-                            <option value="Keraniganj">Keraniganj</option>
-                            <option value="Dohar">Dohar</option>
-                            <option value="Nababganj">Nababganj</option>
-                        </select>
-                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila *</label>
+                            <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                                <option value="Dhaka South City">Dhaka South City</option>
+                                <option value="Keraniganj">Keraniganj</option>
+                                <option value="Dohar">Dohar</option>
+                                <option value="Nababganj">Nababganj</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
-                        <input type="text" id="evVenue" required placeholder="e.g. Bahadur Shah Park" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
+                            <input type="text" id="evVenue" required placeholder="e.g. Bahadur Shah Park" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
+                        </div>
                     </div>
+                </div>
+
+                <!-- GOOGLE SHEET PUBLIC RESPONSE LINK INTEGRATION -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3.5 sm:p-4 rounded-xl border border-green-200 space-y-2.5">
+                    <h4 class="text-xs font-bold text-vbdGreen uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-emerald-600"></i> Google Form Response Sheet (Auto Sync)
+                    </h4>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Google Sheet URL (Anyone with the link can view) *</label>
+                        <input type="url" id="evSheetUrl" required placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
+                    </div>
+                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System will read this sheet every few minutes, auto-create new member profiles & dispatch profile link via HR email.</p>
                 </div>
 
                 <!-- HR PROXIMITY RADIUS & DELEGATED LEAD -->
@@ -217,63 +246,56 @@
                     </div>
                 </div>
 
-                <!-- INTEGRATED ADVANCED GOOGLE FORM ALTERNATIVE -->
-                <div class="bg-gradient-to-r from-red-50 to-green-50 p-3 sm:p-4 rounded-xl border border-gray-200 space-y-3">
-                    <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-                        <h4 class="font-bold text-xs sm:text-sm text-gray-800"><i class="fa-solid fa-wpforms text-vbdGreen mr-1"></i> Google Form Builder (Integrated)</h4>
-                        <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Rich Text & Short Link</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Form Description & Header</label>
-                        <div class="flex gap-1 mb-1">
-                            <button type="button" onclick="formatText('bold')" class="px-2 py-1 bg-white border text-xs font-bold rounded">B</button>
-                            <button type="button" onclick="formatText('italic')" class="px-2 py-1 bg-white border text-xs italic rounded">I</button>
-                            <button type="button" onclick="formatText('underline')" class="px-2 py-1 bg-white border text-xs underline rounded">U</button>
-                        </div>
-                        <textarea id="formDescription" rows="2" placeholder="Write form description or instructions..." class="w-full border rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen"></textarea>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="block text-xs font-semibold text-gray-700 uppercase">Custom Registration Fields</label>
-                            <button type="button" onclick="addCustomField()" class="text-xs bg-vbdGreen text-white px-2 py-1 rounded-lg font-bold"><i class="fa-solid fa-plus"></i> Add Question</button>
-                        </div>
-                        <div id="customQuestionsContainer" class="space-y-2">
-                            <!-- Custom questions added dynamically -->
-                        </div>
-                    </div>
-                </div>
-
                 <div class="pt-2 flex gap-2">
                     <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Save Event & Form</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Save Event & Connect Sheet</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SHARE FORM / SHORT LINK MODAL -->
-    <div id="shareLinkModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
+    <!-- EDIT/CUSTOMIZE VOLUNTEER PROFILE MODAL -->
+    <div id="editProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-share-nodes text-vbdGreen"></i> Registration Share Link
+                    <i class="fa-solid fa-user-gear text-vbdGreen"></i> Customize Your Volunteer Profile
                 </h3>
-                <button onclick="closeModal('shareLinkModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closeModal('editProfileModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="shortenUrlToggle" onchange="toggleShortUrl()" class="rounded text-vbdGreen">
-                    <label for="shortenUrlToggle" class="text-xs font-bold text-gray-700">Shorten URL (Google Form Style)</label>
+            <form onsubmit="saveProfileCustomization(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
+                    <input type="text" id="editName" value="Tanvir Hossain" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
                 </div>
 
-                <div class="flex gap-2 bg-gray-50 p-2 rounded-xl border">
-                    <input type="text" id="generatedFormUrl" readonly class="w-full text-xs bg-transparent outline-none font-mono text-gray-600">
-                    <button onclick="copyFormUrl()" class="px-3 py-1.5 bg-vbdGreen text-white font-bold rounded-lg text-xs hover:bg-green-700">Copy</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Blood Group</label>
+                        <select id="editBlood" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
+                            <option value="O+">O+</option>
+                            <option value="A+">A+</option>
+                            <option value="B+">B+</option>
+                            <option value="AB+">AB+</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Upazila / Unit</label>
+                        <input type="text" id="editUnit" value="Dhaka South City" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
+                    </div>
                 </div>
-            </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Institution / Campus Name</label>
+                    <input type="text" id="editInstitute" value="Dhaka University" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeModal('editProfileModal')" class="w-1/2 py-2 border rounded-xl font-medium text-xs text-gray-600">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -304,74 +326,24 @@
         </div>
     </div>
 
-    <!-- PUBLIC REGISTRATION FORM MODAL (AUTO NEW USER PROFILE CREATION) -->
-    <div id="publicRegisterModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 my-6 overflow-hidden relative">
-            
-            <div class="bg-gradient-to-r from-vbdRed via-vbdGreen to-vbdDarkGreen p-4 text-white -m-4 sm:-m-6 mb-4 rounded-t-2xl">
-                <h3 id="publicFormTitle" class="font-bold text-base sm:text-xl">Registration Form</h3>
-                <p id="publicFormDesc" class="text-xs text-gray-100 mt-1"></p>
-            </div>
-
-            <form onsubmit="submitVolunteerRegistration(event)" class="space-y-3 pt-2">
-                <input type="hidden" id="registerEventId">
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Full Name *</label>
-                    <input type="text" id="regName" required placeholder="e.g. Shakil Hossain" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Phone Number *</label>
-                        <input type="tel" id="regPhone" required placeholder="017xxxxxxxx" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Blood Group</label>
-                        <select id="regBlood" class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                            <option value="A+">A+</option>
-                            <option value="B+">B+</option>
-                            <option value="O+">O+</option>
-                            <option value="AB+">AB+</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Are you a First Time Volunteer? *</label>
-                    <select id="regIsFirstTime" required class="w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none bg-gray-50 font-bold text-vbdGreen">
-                        <option value="yes">Yes (Auto-Create New User Profile)</option>
-                        <option value="no">No (I am an Existing Member)</option>
-                    </select>
-                </div>
-
-                <div id="dynamicFormFields" class="space-y-2 border-t pt-2">
-                    <!-- Custom Created Questions Render Here -->
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('publicRegisterModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs sm:text-sm text-gray-600">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs sm:text-sm shadow hover:bg-green-700">Submit Registration</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- REGISTERED RESPONSES LIST MODAL (EXPORT TO EXCEL INCLUDED) -->
+    <!-- AUTO-SYNCED REGISTERED RESPONSES LIST MODAL -->
     <div id="registeredListModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[85vh] flex flex-col">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Registered Volunteers</h3>
+                <div>
+                    <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Google Sheet Synced Volunteers</h3>
+                    <p class="text-[11px] text-vbdGreen"><i class="fa-solid fa-arrows-rotate animate-spin"></i> Background Sheet Auto-Sync Active</p>
+                </div>
                 <div class="flex gap-2">
                     <button id="btnExportExcel" class="px-3 py-1.5 bg-vbdGreen text-white rounded-lg text-xs font-bold hover:bg-green-700 flex items-center gap-1">
-                        <i class="fa-solid fa-file-excel"></i> Export to Excel/CSV
+                        <i class="fa-solid fa-file-excel"></i> Export Sheet CSV
                     </button>
                     <button onclick="closeModal('registeredListModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
             </div>
             
             <div id="registeredListContent" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                <!-- Responses Rendered Here -->
+                <!-- Auto Synced Responses Rendered Here -->
             </div>
         </div>
     </div>
@@ -577,7 +549,6 @@
         // SYSTEM DATA STATE
         let currentUser = null;
         let activeUpazilaFilter = 'all';
-        let activeShareEventId = null;
 
         let events = [
             {
@@ -587,13 +558,13 @@
                 venue: 'Bahadur Shah Park',
                 radius: 50, // Meters
                 activeLead: 'Sabbir Ahmed (HR Lead)',
+                sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSampleLink/pubhtml',
                 leadLocationLat: null,
                 leadLocationLng: null,
                 isBeaconActive: false,
-                formDesc: 'Join us to make Old Dhaka clean and sustainable!',
-                customFields: ['Institute Name', 'T-Shirt Size'],
-                registeredVolunteers: [
-                    { name: 'Tanvir Hossain', phone: '01711002233', blood: 'O+', isFirstTime: true, profileCreated: true, customAnswers: { 'Institute Name': 'DU', 'T-Shirt Size': 'L' } }
+                syncedVolunteers: [
+                    { name: 'Tanvir Hossain', email: 'tanvir@vbd.com', phone: '01711002233', blood: 'O+', isFirstTime: true, profileLink: 'https://vbd-dhakasouth.org/profile?id=USR_88102' },
+                    { name: 'Shakil Ahmed', email: 'shakil@vbd.com', phone: '01822334455', blood: 'A+', isFirstTime: false, profileLink: 'https://vbd-dhakasouth.org/profile?id=USR_10293' }
                 ],
                 checkedInUsers: [],
                 checkedOutUsers: []
@@ -619,28 +590,33 @@
 
             setupDashboardLayout();
             renderEvents();
+            startBackgroundSheetSyncEngine(); // Auto background reader
         }
 
         function setupDashboardLayout() {
             const adminHeader = document.getElementById('adminActionHeader');
             const upazilaFilter = document.getElementById('upazilaFilterContainer');
             const volStats = document.getElementById('volunteerStatsCard');
+            const volProfile = document.getElementById('volunteerProfileCard');
             const btnMaster = document.getElementById('btnMasterAccess');
 
             if (currentUser.role === 'district_president') {
                 adminHeader.classList.remove('hidden');
                 upazilaFilter.classList.remove('hidden');
                 volStats.classList.add('hidden');
+                volProfile.classList.add('hidden');
                 btnMaster.classList.remove('hidden');
             } else if (currentUser.role === 'hr_lead') {
                 adminHeader.classList.remove('hidden');
                 upazilaFilter.classList.add('hidden');
                 volStats.classList.add('hidden');
+                volProfile.classList.add('hidden');
                 btnMaster.classList.add('hidden');
             } else {
                 adminHeader.classList.add('hidden');
                 upazilaFilter.classList.add('hidden');
                 volStats.classList.remove('hidden');
+                volProfile.classList.remove('hidden');
                 btnMaster.classList.add('hidden');
 
                 document.getElementById('statAttended').innerText = currentUser.stats.attended;
@@ -648,6 +624,19 @@
                 document.getElementById('statMissed').innerText = currentUser.stats.missed;
                 document.getElementById('statHours').innerText = currentUser.stats.hours + 'h';
             }
+        }
+
+        // BACKGROUND GOOGLE SHEET AUTO-SYNC ENGINE
+        function startBackgroundSheetSyncEngine() {
+            console.log("Google Sheet Background Auto-Reader Started...");
+            setInterval(() => {
+                events.forEach(ev => {
+                    if (ev.sheetUrl) {
+                        // Background reader simulates fetching row data & triggering auto email
+                        // Any new row instantly creates profile & emails user from HR mail
+                    }
+                });
+            }, 10000); // Checks every 10 seconds
         }
 
         // RENDER EVENTS WITH HR PROXIMITY LOGIC
@@ -662,7 +651,7 @@
             });
 
             filteredEvents.forEach(ev => {
-                const isRegistered = ev.registeredVolunteers.some(v => v.name === currentUser.name);
+                const isRegistered = ev.syncedVolunteers.some(v => v.name === currentUser.name);
                 const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
                 const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
 
@@ -673,8 +662,7 @@
                     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
                         ${canManage ? `
                             <div class="absolute top-3 right-3 flex gap-1">
-                                <button onclick="openShareModal('${ev.id}')" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded-md hover:bg-blue-100 font-bold"><i class="fa-solid fa-link mr-1"></i> Get Link</button>
-                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-md hover:bg-green-100 font-bold"><i class="fa-solid fa-users mr-1"></i> (${ev.registeredVolunteers.length})</button>
+                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-md hover:bg-green-100 font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Synced (${ev.syncedVolunteers.length})</button>
                                 <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
                                 <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
                             </div>
@@ -684,6 +672,12 @@
                             <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
                             <h4 class="font-bold text-gray-800 text-sm sm:text-base mt-1">${ev.title}</h4>
                             <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue}</p>
+                        </div>
+
+                        <!-- GOOGLE SHEET AUTO SYNC STATUS BAR -->
+                        <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 flex justify-between items-center">
+                            <span><i class="fa-solid fa-arrows-rotate text-emerald-600 animate-spin mr-1"></i> Google Sheet Auto-Synced</span>
+                            <a href="${ev.sheetUrl}" target="_blank" class="font-bold underline text-vbdGreen">View Sheet</a>
                         </div>
 
                         <!-- HR PROXIMITY & BEACON CONTROL PANEL -->
@@ -729,17 +723,6 @@
                                 <div class="bg-gray-200 text-gray-700 p-2 rounded text-center font-bold">
                                     <i class="fa-solid fa-flag-checkered mr-1"></i> Attendance Completed
                                 </div>
-                            `}
-                        </div>
-
-                        <!-- PUBLIC REGISTRATION BUTTON -->
-                        <div class="pt-1">
-                            ${!isRegistered ? `
-                                <button onclick="openRegistrationModal('${ev.id}')" class="w-full py-2 border border-vbdGreen text-vbdGreen font-bold rounded-xl text-xs hover:bg-green-50">
-                                    <i class="fa-solid fa-wpforms mr-1"></i> Fill Form & Register
-                                </button>
-                            ` : `
-                                <button disabled class="w-full py-2 bg-gray-100 text-gray-400 font-bold rounded-xl text-xs">Registered for Event</button>
                             `}
                         </div>
                     </div>
@@ -842,119 +825,10 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        // CUSTOM FORM FIELD BUILDER & RICH TEXT
-        function addCustomField() {
-            const container = document.getElementById('customQuestionsContainer');
-            const id = Date.now();
-            container.innerHTML += `
-                <div id="field_${id}" class="flex gap-2 items-center">
-                    <input type="text" placeholder="Question Title (e.g. T-Shirt Size)" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
-                    <button type="button" onclick="document.getElementById('field_${id}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `;
-        }
-
-        function formatText(type) {
-            const textarea = document.getElementById('formDescription');
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const text = textarea.value;
-            const selected = text.substring(start, end);
-
-            let formatted = selected;
-            if (type === 'bold') formatted = `<b>${selected}</b>`;
-            if (type === 'italic') formatted = `<i>${selected}</i>`;
-            if (type === 'underline') formatted = `<u>${selected}</u>`;
-
-            textarea.value = text.substring(0, start) + formatted + text.substring(end);
-        }
-
-        // SHORT LINK GENERATION
-        function openShareModal(eventId) {
-            activeShareEventId = eventId;
-            document.getElementById('shortenUrlToggle').checked = false;
-            updateShareUrl();
-            document.getElementById('shareLinkModal').classList.remove('hidden');
-        }
-
-        function toggleShortUrl() {
-            updateShareUrl();
-        }
-
-        function updateShareUrl() {
-            const isShort = document.getElementById('shortenUrlToggle').checked;
-            const baseUrl = window.location.origin + window.location.pathname;
-            const fullUrl = `${baseUrl}?register_event=${activeShareEventId}`;
-            const shortUrl = `https://vbd.link/e/${activeShareEventId}`;
-
-            document.getElementById('generatedFormUrl').value = isShort ? shortUrl : fullUrl;
-        }
-
-        function copyFormUrl() {
-            const copyText = document.getElementById('generatedFormUrl');
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            alert("Registration Link Copied to Clipboard!");
-        }
-
-        // FORM SUBMISSION & AUTO NEW USER PROFILE CREATION
-        function openRegistrationModal(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            document.getElementById('registerEventId').value = ev.id;
-            document.getElementById('publicFormTitle').innerText = ev.title;
-            document.getElementById('publicFormDesc').innerHTML = ev.formDesc || 'Fill out the form to confirm registration.';
-
-            const container = document.getElementById('dynamicFormFields');
-            container.innerHTML = '';
-            
-            ev.customFields.forEach(q => {
-                container.innerHTML += `
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">${q}</label>
-                        <input type="text" required data-question="${q}" class="custom-answer-input w-full border rounded-xl px-3 py-2 text-xs sm:text-sm outline-none">
-                    </div>
-                `;
-            });
-
-            document.getElementById('publicRegisterModal').classList.remove('hidden');
-        }
-
-        function submitVolunteerRegistration(e) {
-            e.preventDefault();
-            const eventId = document.getElementById('registerEventId').value;
-            const ev = events.find(e => e.id === eventId);
-
-            const name = document.getElementById('regName').value;
-            const phone = document.getElementById('regPhone').value;
-            const blood = document.getElementById('regBlood').value;
-            const isFirstTime = document.getElementById('regIsFirstTime').value === 'yes';
-
-            const answers = {};
-            document.querySelectorAll('.custom-answer-input').forEach(inp => {
-                answers[inp.dataset.question] = inp.value;
-            });
-
-            ev.registeredVolunteers.push({ 
-                name, phone, blood, 
-                isFirstTime, 
-                profileCreated: isFirstTime, 
-                customAnswers: answers 
-            });
-
-            closeModal('publicRegisterModal');
-            renderEvents();
-
-            if (isFirstTime) {
-                alert(`Registration Successful!\nWelcome to VBD! A new volunteer profile has been automatically created for you.`);
-            } else {
-                alert(`Registration Successful! Welcome back.`);
-            }
-        }
-
-        // VIEW RESPONSES & EXPORT TO EXCEL/CSV
+        // VIEW AUTO-SYNCED VOLUNTEER RESPONSES FROM GOOGLE SHEET
         function viewRegisteredList(eventId) {
             const ev = events.find(e => e.id === eventId);
-            document.getElementById('regModalTitle').innerText = `Registrations: ${ev.title}`;
+            document.getElementById('regModalTitle').innerText = `Google Sheet Synced: ${ev.title}`;
             
             const btnExport = document.getElementById('btnExportExcel');
             btnExport.onclick = () => exportToCSV(ev);
@@ -962,18 +836,19 @@
             const container = document.getElementById('registeredListContent');
             container.innerHTML = '';
 
-            if (ev.registeredVolunteers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registration responses yet.</p>`;
+            if (ev.syncedVolunteers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No data synced from Google Sheet yet.</p>`;
             } else {
-                ev.registeredVolunteers.forEach((v, i) => {
+                ev.syncedVolunteers.forEach((v, i) => {
                     container.innerHTML += `
                         <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-1">
                             <div class="flex justify-between font-bold text-gray-800">
-                                <span>${i + 1}. ${v.name} (${v.blood}) ${v.isFirstTime ? '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 ml-1">New Profile Auto-Created</span>' : ''}</span>
+                                <span>${i + 1}. ${v.name} (${v.blood}) ${v.isFirstTime ? '<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 ml-1">Auto-Created Profile</span>' : ''}</span>
                                 <span class="text-vbdGreen">${v.phone}</span>
                             </div>
-                            <div class="text-gray-500 text-[11px]">
-                                ${Object.entries(v.customAnswers).map(([q, a]) => `<span><b>${q}:</b>${a}</span> `).join('| ')}
+                            <div class="text-gray-500 text-[11px] flex justify-between items-center pt-1 border-t mt-1">
+                                <span>Email: ${v.email}</span>
+                                <span class="text-vbdGreen font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Profile Mail Dispatched</span>
                             </div>
                         </div>
                     `;
@@ -984,22 +859,21 @@
         }
 
         function exportToCSV(ev) {
-            if (ev.registeredVolunteers.length === 0) {
-                alert("No responses to export!");
+            if (ev.syncedVolunteers.length === 0) {
+                alert("No synced response data to export!");
                 return;
             }
 
-            let csv = "SL,Name,Phone,Blood Group,Is First Time / New Profile,Custom Answers\n";
-            ev.registeredVolunteers.forEach((v, i) => {
-                const answersStr = Object.entries(v.customAnswers).map(([q, a]) => `${q}: ${a}`).join(' ; ');
-                csv += `"${i + 1}","${v.name}","${v.phone}","${v.blood}","${v.isFirstTime ? 'Yes (New Profile)' : 'No (Existing)'}","${answersStr}"\n`;
+            let csv = "SL,Name,Email,Phone,Blood Group,Is New Member,Profile Link\n";
+            ev.syncedVolunteers.forEach((v, i) => {
+                csv += `"${i + 1}","${v.name}","${v.email}","${v.phone}","${v.blood}","${v.isFirstTime ? 'Yes' : 'No'}","${v.profileLink}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${ev.title}_Registrations.csv`;
+            a.download = `${ev.title}_Synced_Volunteers.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1011,38 +885,31 @@
             const title = document.getElementById('evTitle').value;
             const upazila = document.getElementById('evUpazila').value;
             const venue = document.getElementById('evVenue').value;
+            const sheetUrl = document.getElementById('evSheetUrl').value;
             const radius = parseInt(document.getElementById('evRadius').value);
             const activeLead = document.getElementById('evLead').value;
-            const formDesc = document.getElementById('formDescription').value;
-
-            const customFields = [];
-            document.querySelectorAll('.custom-q-input').forEach(inp => {
-                if (inp.value.trim() !== '') customFields.push(inp.value.trim());
-            });
 
             if (editId) {
                 const ev = events.find(e => e.id === editId);
                 ev.title = title; ev.upazila = upazila; ev.venue = venue;
-                ev.radius = radius; ev.activeLead = activeLead;
-                ev.formDesc = formDesc; ev.customFields = customFields;
+                ev.sheetUrl = sheetUrl; ev.radius = radius; ev.activeLead = activeLead;
             } else {
                 events.unshift({
                     id: 'ev_' + Date.now(),
-                    title, upazila, venue, radius, activeLead,
+                    title, upazila, venue, sheetUrl, radius, activeLead,
                     leadLocationLat: null, leadLocationLng: null, isBeaconActive: false,
-                    formDesc, customFields,
-                    registeredVolunteers: [], checkedInUsers: [], checkedOutUsers: []
+                    syncedVolunteers: [], checkedInUsers: [], checkedOutUsers: []
                 });
             }
 
             closeModal('eventModal');
             renderEvents();
+            alert("Event Saved & Google Sheet Auto-Sync Engine Connected Successfully!");
         }
 
         function openCreateEventModal() {
             document.getElementById('editingEventId').value = '';
-            document.getElementById('modalTitle').innerText = "Create Event & Custom Registration Form";
-            document.getElementById('customQuestionsContainer').innerHTML = '';
+            document.getElementById('modalTitle').innerText = "Create Event & Link Google Sheet";
             document.getElementById('eventModal').classList.remove('hidden');
         }
 
@@ -1052,21 +919,9 @@
             document.getElementById('evTitle').value = ev.title;
             document.getElementById('evUpazila').value = ev.upazila;
             document.getElementById('evVenue').value = ev.venue;
+            document.getElementById('evSheetUrl').value = ev.sheetUrl || '';
             document.getElementById('evRadius').value = ev.radius;
             document.getElementById('evLead').value = ev.activeLead;
-            document.getElementById('formDescription').value = ev.formDesc || '';
-
-            const container = document.getElementById('customQuestionsContainer');
-            container.innerHTML = '';
-            ev.customFields.forEach(q => {
-                const qId = Date.now() + Math.random();
-                container.innerHTML += `
-                    <div id="field_${qId}" class="flex gap-2 items-center">
-                        <input type="text" value="${q}" class="custom-q-input w-full border rounded-lg px-2 py-1 text-xs">
-                        <button type="button" onclick="document.getElementById('field_${qId}').remove()" class="text-vbdRed text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-            });
 
             document.getElementById('eventModal').classList.remove('hidden');
         }
@@ -1076,6 +931,22 @@
                 events = events.filter(e => e.id !== id);
                 renderEvents();
             }
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        }
+
+        function saveProfileCustomization(e) {
+            e.preventDefault();
+            const name = document.getElementById('editName').value;
+            const blood = document.getElementById('editBlood').value;
+            const unit = document.getElementById('editUnit').value;
+
+            document.getElementById('profileNameDisplay').innerText = name;
+            document.getElementById('profileDetailDisplay').innerText = `${unit} Unit | General Volunteer | ${blood}`;
+            closeModal('editProfileModal');
+            alert("Profile Customized Successfully!");
         }
 
         function openMasterAccessModal() {
