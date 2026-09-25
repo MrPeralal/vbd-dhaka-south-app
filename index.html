@@ -1,936 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBD Dhaka South - Automated Enterprise Platform</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- EmailJS SDK for Direct Browser Emailing -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    
-    <script>
-        (function() {
-            // Initialize EmailJS (Public API Key for Automated Emails)
-            emailjs.init("YOUR_PUBLIC_KEY");
-        })();
-
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        vbdRed: '#E31B23',
-                        vbdGreen: '#006A4E',
-                        vbdDarkGreen: '#004D38',
-                        vbdYellow: '#FFC72C'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .modal-scroll::-webkit-scrollbar { width: 6px; }
-        .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 8px; }
-        .modal-scroll::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VBD Dhaka District South - Master Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+    body { font-family: 'Hind Siliguri', sans-serif; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col">
+<body class="bg-gray-100 min-h-screen text-gray-800">
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-md border-b-4 border-vbdRed sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 sm:h-20 items-center">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <img src="https://ui-avatars.com/api/?name=VBD+Dhaka+South&background=E31B23&color=fff&size=128" 
-                         alt="VBD Logo" class="h-10 sm:h-12 w-auto object-contain">
-                    <div>
-                        <h1 class="font-bold text-sm sm:text-lg leading-tight text-gray-900">Volunteer for Bangladesh</h1>
-                        <p class="text-[10px] sm:text-xs text-vbdGreen font-bold tracking-wide">Dhaka South District Panel</p>
-                    </div>
-                </div>
-                
-                <!-- Active User Profile Bar -->
-                <div id="navUserMenu" class="flex items-center space-x-2 hidden">
-                    <div class="text-right hidden md:block">
-                        <p id="navUserName" class="text-xs sm:text-sm font-bold text-gray-800">User Name</p>
-                        <p id="navUserRole" class="text-[10px] sm:text-[11px] text-vbdGreen font-semibold">Designation</p>
-                    </div>
-                    <button onclick="logout()" class="text-xs sm:text-sm font-medium text-gray-600 hover:text-vbdRed transition bg-gray-100 px-2.5 py-1.5 rounded-lg border">
-                        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Logout</span>
-                    </button>
-                </div>
-            </div>
+  <!-- TOP NAVBAR -->
+  <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white text-red-600 font-bold px-2 py-1 rounded text-xl">VBD</div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Volunteer for Bangladesh</h1>
+          <p class="text-xs text-red-100">Dhaka District South Zone</p>
         </div>
-    </nav>
+      </div>
+      <div id="userInfoHeader" class="hidden flex items-center space-x-3">
+        <span id="userRoleBadge" class="bg-red-800 text-xs px-2.5 py-1 rounded-full font-semibold">General Volunteer</span>
+        <button onclick="logout()" class="text-xs bg-white text-red-600 px-3 py-1.5 rounded font-bold hover:bg-red-50">লগআউট</button>
+      </div>
+    </div>
+  </nav>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+  <!-- ALERT MESSAGES -->
+  <div id="alertBox" class="hidden max-w-xl mx-auto mt-4 px-4 py-3 rounded text-sm text-center font-medium shadow-md"></div>
 
-        <!-- AUTHENTICATION / ROLE SELECTOR -->
-        <div id="authSection" class="max-w-xl mx-auto my-4 sm:my-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
-            <div class="text-center mb-5">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Select Role Prototype</h2>
-                <p class="text-xs text-gray-500 mt-1">Test Central Email, Fixed Sheet Reader & Restricted Geo Check-in</p>
-            </div>
+  <!-- CONTAINER -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
 
-            <div class="space-y-3">
-                <button onclick="loginAs('district_president')" class="w-full p-3 bg-red-50 hover:bg-red-100 text-vbdRed border border-red-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-crown mr-2"></i> District President / VP (Master Access)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-vbdRed text-white px-2 py-0.5 rounded">Master Admin</span>
-                </button>
-
-                <button onclick="loginAs('hr_lead')" class="w-full p-3 bg-green-50 hover:bg-green-100 text-vbdGreen border border-green-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user-shield mr-2"></i> HR Secretary / Event In-Charge (Location Host)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">HR Lead</span>
-                </button>
-
-                <button onclick="loginAs('registered_volunteer')" class="w-full p-3 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user-check mr-2"></i> Tanvir Hossain (Registered Participant)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded">Allowed Check-In</span>
-                </button>
-
-                <button onclick="loginAs('unregistered_volunteer')" class="w-full p-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border rounded-xl font-bold text-xs text-left flex justify-between items-center transition">
-                    <span><i class="fa-solid fa-user-xmark mr-2"></i> Unregistered User (Didn't fill Google Form)</span>
-                    <span class="text-[9px] sm:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded">Blocked Check-In</span>
-                </button>
-            </div>
+    <!-- 1. LOGIN SECTION -->
+    <div id="loginSection" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">পোর্টাল লগইন</h2>
+      <p class="text-xs text-center text-gray-500 mb-6">আপনার রেজিস্টার্ড ইমেইল ও পাসওয়ার্ড প্রদান করুন</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">ইমেইল এড্রেস</label>
+          <input type="email" id="loginEmail" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="example@vbd.com.bd">
         </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">পাসওয়ার্ড</label>
+          <input type="password" id="loginPassword" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="••••••••">
+        </div>
+        <button onclick="handleLogin()" id="btnLogin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded text-sm transition">লগইন করুন</button>
+        <div class="text-right">
+          <button onclick="showSection('forgotPasswordSection')" class="text-xs text-red-600 font-semibold hover:underline">পাসওয়ার্ড ভুলে গেছেন?</button>
+        </div>
+      </div>
+    </div>
 
-        <!-- DASHBOARD CONTAINER -->
-        <div id="dashboardSection" class="hidden space-y-4 sm:space-y-6">
+    <!-- 2. FORGOT PASSWORD & OTP SECTION -->
+    <div id="forgotPasswordSection" class="hidden max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <h2 class="text-xl font-bold text-center text-gray-800 mb-2">পাসওয়ার্ড রিসেট</h2>
+      <p class="text-xs text-center text-gray-500 mb-6">এইচআর অফিসারের থেকে ওটিপি ইমেইলে যাবে</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">ইমেইল এড্রেস</label>
+          <div class="flex space-x-2">
+            <input type="email" id="resetEmail" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="your.email@vbd.com.bd">
+            <button onclick="requestOTP()" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap">OTP পাঠান</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">৬ ডিজিট OTP কোড</label>
+          <input type="text" id="otpCode" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="123456">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">নতুন পাসওয়ার্ড</label>
+          <input type="password" id="newPassword" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="নতুন পাসওয়ার্ড দিন">
+        </div>
+        <button onclick="submitResetPassword()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded text-sm transition">পাসওয়ার্ড আপডেট করুন</button>
+        <div class="text-center">
+          <button onclick="showSection('loginSection')" class="text-xs text-gray-600 font-semibold hover:underline">লগইন পেজে ফিরে যান</button>
+        </div>
+      </div>
+    </div>
 
-            <!-- ADMIN EXECUTIVE CONTROL HEADER -->
-            <div id="adminActionHeader" class="bg-gradient-to-r from-vbdGreen to-vbdDarkGreen text-white p-4 sm:p-6 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
-                <div>
-                    <h3 class="text-lg sm:text-xl font-bold">Executive Control Center</h3>
-                    <p class="text-xs text-green-100">Live Google Sheet Auto-Sync Engine & Central Mailer</p>
-                </div>
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button id="btnMasterAccess" onclick="openMasterAccessModal()" class="flex-1 sm:flex-none px-3.5 py-2 bg-vbdYellow text-gray-900 rounded-xl font-bold text-xs shadow hover:bg-yellow-400 transition flex items-center justify-center gap-1.5 hidden">
-                        <i class="fa-solid fa-key"></i> Master Access Sheet
-                    </button>
-                    <button onclick="openCreateEventModal()" class="flex-1 sm:flex-none px-4 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700 transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-plus"></i> Create Event + Link Sheet
-                    </button>
-                </div>
-            </div>
+    <!-- 3. DASHBOARD MAIN CONTAINER -->
+    <div id="dashboardSection" class="hidden space-y-6">
+      
+      <!-- NAV TABS FOR DASHBOARD -->
+      <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-2">
+        <button onclick="switchTab('eventsTab')" id="tabEvents" class="tab-btn active bg-red-600 text-white px-4 py-2 rounded text-xs font-bold">চলতি ইভেন্টসমূহ</button>
+        <button onclick="switchTab('archiveTab')" id="tabArchive" class="tab-btn bg-gray-100 text-gray-700 px-4 py-2 rounded text-xs font-bold hover:bg-gray-200">বাৎসরিক আর্কাভ হিস্ট্রি</button>
+        <button onclick="switchTab('masterAccessTab')" id="tabMasterAccess" class="tab-btn hidden bg-yellow-500 text-white px-4 py-2 rounded text-xs font-bold hover:bg-yellow-600"><i class="fa-solid fa-user-shield mr-1"></i> Master Access Sheet</button>
+      </div>
 
-            <!-- UPAZILA DIRECTORY FILTER -->
-            <div id="upazilaFilterContainer" class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm hidden">
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Upazila Directory View:</label>
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                    <button onclick="filterUpazila('all')" class="upazila-btn p-2 border rounded-lg bg-vbdGreen text-white font-bold" data-unit="all">All Units</button>
-                    <button onclick="filterUpazila('Dhaka South City')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dhaka South City">Dhaka South</button>
-                    <button onclick="filterUpazila('Keraniganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Keraniganj">Keraniganj</button>
-                    <button onclick="filterUpazila('Dohar')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Dohar">Dohar</button>
-                    <button onclick="filterUpazila('Nababganj')" class="upazila-btn p-2 border rounded-lg bg-gray-50 font-bold" data-unit="Nababganj">Nababganj</button>
-                </div>
-            </div>
+      <!-- TAB 1: EVENTS -->
+      <div id="eventsTab" class="tab-content space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-lg text-gray-800">অ্যাক্টিভ ও পেন্ডিং ইভেন্টসমূহ</h3>
+          <button id="btnCreateEvent" onclick="openCreateEventModal()" class="hidden bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-2 rounded shadow">
+            <i class="fa-solid fa-plus mr-1"></i> নতুন ইভেন্ট তৈরি
+          </button>
+        </div>
+        <div id="eventList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically Loaded Events -->
+        </div>
+      </div>
 
-            <!-- VOLUNTEER PROFILE CARD (CAN CUSTOMIZE) -->
-            <div id="volunteerProfileCard" class="bg-white p-4 sm:p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hidden">
-                <div class="flex items-center gap-4">
-                    <div id="profileAvatar" class="w-14 h-14 bg-vbdGreen text-white rounded-2xl flex items-center justify-center font-bold text-2xl shadow-sm">T</div>
-                    <div>
-                        <h3 id="profileNameDisplay" class="font-bold text-slate-800 text-lg">Tanvir Hossain</h3>
-                        <p id="profileDetailDisplay" class="text-xs text-slate-500">Dhaka South City Unit | O+</p>
-                        <p id="profileStatusBadge" class="text-[10px] text-vbdGreen font-semibold mt-0.5"><i class="fa-solid fa-circle-check"></i> Registered Participant (Sheet Verified)</p>
-                    </div>
-                </div>
-                <button onclick="openEditProfileModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-pen text-vbdGreen"></i> Customize Profile
-                </button>
-            </div>
+      <!-- TAB 2: ARCHIVE HISTORY -->
+      <div id="archiveTab" class="tab-content hidden space-y-4">
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+          <h3 class="font-bold text-sm text-gray-800">পূর্ববর্তী সেশনের ডাটা দেখার আর্কাভ</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-semibold">সেশন বছর:</span>
+            <select id="archiveYearSelect" onchange="loadArchiveData()" class="border border-gray-300 rounded px-2 py-1 text-xs font-bold">
+              <option value="2026">2026 Session</option>
+              <option value="2025">2025 Session</option>
+              <option value="2024">2024 Session</option>
+            </select>
+          </div>
+        </div>
+        <div id="archiveEventList" class="space-y-2">
+          <!-- Archive Loaded Here -->
+        </div>
+      </div>
 
-            <!-- VOLUNTEER STATS CARD -->
-            <div id="volunteerStatsCard" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 hidden">
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Attended Events</p>
-                    <p id="statAttended" class="text-xl sm:text-2xl font-bold text-vbdGreen">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Late Check-ins</p>
-                    <p id="statLate" class="text-xl sm:text-2xl font-bold text-vbdYellow">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Missed Events</p>
-                    <p id="statMissed" class="text-xl sm:text-2xl font-bold text-vbdRed">0</p>
-                </div>
-                <div class="bg-white p-3 sm:p-4 rounded-xl border shadow-sm text-center">
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">Volunteer Hours</p>
-                    <p id="statHours" class="text-xl sm:text-2xl font-bold text-gray-800">0h</p>
-                </div>
-            </div>
-
-            <!-- EVENTS SECTION -->
+      <!-- TAB 3: MASTER ACCESS SHEET (ANNUAL HANDOVER PANEL) -->
+      <div id="masterAccessTab" class="tab-content hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+          <div class="border-b pb-4 flex justify-between items-center">
             <div>
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg"><i class="fa-solid fa-calendar-day text-vbdRed mr-1"></i> Active Events & Google Sheet Auto-Sync</h3>
-                    <span class="text-[10px] sm:text-xs text-gray-500">Auto-Fetch Engine Active</span>
-                </div>
-                <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                    <!-- Dynamic Events Rendered Here -->
-                </div>
+              <h3 class="font-bold text-lg text-gray-800">Master Access Sheet (Annual Permission Control)</h3>
+              <p class="text-xs text-gray-500">বাৎসরিক দায়িত্ব হস্তান্তরের জন্য মেম্বারদের ইমেইল পরিবর্তন করুন</p>
+            </div>
+            <button onclick="saveMasterPermissions()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow">
+              <i class="fa-solid fa-save mr-1"></i> Save & Send Access Mails
+            </button>
+          </div>
+
+          <!-- DISTRICT BOARD SECTION -->
+          <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+            <h4 class="font-bold text-sm text-red-800 mb-3 border-b border-red-200 pb-1"><i class="fa-solid fa-crown mr-1"></i> District Board Access (Central)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label class="font-semibold block mb-1">President Email</label>
+                <input type="email" id="m_DISTRICT_PRESIDENT" class="w-full border rounded px-2 py-1.5">
+              </div>
+              <div>
+                <label class="font-semibold block mb-1">Vice President Email</label>
+                <input type="email" id="m_DISTRICT_VP" class="w-full border rounded px-2 py-1.5">
+              </div>
+              <div>
+                <label class="font-semibold block mb-1">General Secretary Email</label>
+                <input type="email" id="m_DISTRICT_GS" class="w-full border rounded px-2 py-1.5">
+              </div>
+              <div>
+                <label class="font-semibold block mb-1">Treasurer Email</label>
+                <input type="email" id="m_DISTRICT_TREASURER" class="w-full border rounded px-2 py-1.5">
+              </div>
+              <div>
+                <label class="font-semibold block mb-1">HR Officer Email (Auto Mailer)</label>
+                <input type="email" id="m_DISTRICT_HRO" class="w-full border rounded px-2 py-1.5 bg-yellow-50">
+              </div>
+              <div>
+                <label class="font-semibold block mb-1">Program Officer Email</label>
+                <input type="email" id="m_DISTRICT_PO" class="w-full border rounded px-2 py-1.5">
+              </div>
+            </div>
+          </div>
+
+          <!-- UPAZILA BOARDS SECTION -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- DSCC -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
+              <h5 class="font-bold text-gray-700 border-b pb-1">DSCC Upazila Board</h5>
+              <div><label class="block">President:</label><input type="email" id="m_DSCC_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">General Secretary:</label><input type="email" id="m_DSCC_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">HR Secretary:</label><input type="email" id="m_DSCC_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">Project Secretary:</label><input type="email" id="m_DSCC_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
             </div>
 
-        </div>
-
-    </main>
-
-    <!-- CREATE/EDIT EVENT MODAL WITH GOOGLE SHEET RESPONSE URL INTEGRATION -->
-    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Create Event & Link Google Sheet</h3>
-                <button onclick="closeModal('eventModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <!-- KERANIGANJ -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
+              <h5 class="font-bold text-gray-700 border-b pb-1">Keraniganj Upazila Board</h5>
+              <div><label class="block">President:</label><input type="email" id="m_Keraniganj_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">General Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">HR Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">Project Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
             </div>
-            
-            <form onsubmit="saveEvent(event)" class="space-y-4">
-                <input type="hidden" id="editingEventId">
 
-                <!-- Basic Event Details -->
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Event Title *</label>
-                        <input type="text" id="evTitle" required placeholder="e.g. Youth Awareness Rally-2026" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                    </div>
+            <!-- DOHAR -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
+              <h5 class="font-bold text-gray-700 border-b pb-1">Dohar Upazila Board</h5>
+              <div><label class="block">President:</label><input type="email" id="m_Dohar_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">General Secretary:</label><input type="email" id="m_Dohar_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">HR Secretary:</label><input type="email" id="m_Dohar_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">Project Secretary:</label><input type="email" id="m_Dohar_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
+            </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Target Upazila *</label>
-                            <select id="evUpazila" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                                <option value="Dhaka South City">Dhaka South City</option>
-                                <option value="Keraniganj">Keraniganj</option>
-                                <option value="Dohar">Dohar</option>
-                                <option value="Nababganj">Nababganj</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Venue Name *</label>
-                            <input type="text" id="evVenue" required placeholder="e.g. Manikmia Avinew" class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Reporting Time *</label>
-                        <input type="time" id="evReportingTime" value="09:00" required class="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-vbdGreen">
-                    </div>
-                </div>
-
-                <!-- GOOGLE SHEET PUBLIC RESPONSE LINK INTEGRATION -->
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3.5 sm:p-4 rounded-xl border border-green-200 space-y-2.5">
-                    <h4 class="text-xs font-bold text-vbdGreen uppercase flex items-center gap-1.5">
-                        <i class="fa-solid fa-file-csv text-emerald-600"></i> Google Form Response Sheet Link *
-                    </h4>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-gray-700 mb-1">Google Sheet URL (Anyone with the link can view)</label>
-                        <input type="url" id="evSheetUrl" required placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
-                    </div>
-                    <p class="text-[10px] text-gray-500 italic"><i class="fa-solid fa-robot text-vbdGreen mr-1"></i> System syncs registered members and dispatches mails automatically.</p>
-                </div>
-
-                <!-- HR PROXIMITY RADIUS & DELEGATED LEAD -->
-                <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border space-y-3">
-                    <h4 class="text-xs font-bold text-vbdGreen uppercase flex items-center gap-1.5">
-                        <i class="fa-solid fa-street-view text-vbdRed"></i> HR Proximity Rules
-                    </h4>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Proximity Range *</label>
-                            <select id="evRadius" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
-                                <option value="20">20 Meters</option>
-                                <option value="50" selected>50 Meters</option>
-                                <option value="100">100 Meters</option>
-                                <option value="200">200 Meters</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Assigned HR Lead *</label>
-                            <input type="text" id="evLead" required value="Sabbir Ahmed (HR Lead)" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen bg-white">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('eventModal')" class="w-1/2 py-2.5 border rounded-xl font-medium text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700">Save & Connect Sheet</button>
-                </div>
-            </form>
+            <!-- NAWABGANJ -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
+              <h5 class="font-bold text-gray-700 border-b pb-1">Nawabganj Upazila Board</h5>
+              <div><label class="block">President:</label><input type="email" id="m_Nawabganj_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">General Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">HR Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
+              <div><label class="block">Project Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
+            </div>
+          </div>
         </div>
+      </div>
+
     </div>
+  </div>
 
-    <!-- EDIT/CUSTOMIZE VOLUNTEER PROFILE MODAL -->
-    <div id="editProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear text-vbdGreen"></i> Customize Your Volunteer Profile
-                </h3>
-                <button onclick="closeModal('editProfileModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
+  <!-- JAVASCRIPT LOGIC CONNECTED TO APPS SCRIPT -->
+  <script>
+    // -----------------------------------------------------------
+    // YOUR APPS SCRIPT WEB APP URL LINKED HERE
+    // -----------------------------------------------------------
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBczq-XndpBFaTxKBKIolpIQ9HjM_uqHbfW4zU39JhTQsJSGIsnBFXzu0ryU7MPTn6PA/exec";
 
-            <form onsubmit="saveProfileCustomization(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
-                    <input type="text" id="editName" value="Tanvir Hossain" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
+    let currentUser = null;
 
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Blood Group</label>
-                        <select id="editBlood" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                            <option value="O+">O+</option>
-                            <option value="A+">A+</option>
-                            <option value="B+">B+</option>
-                            <option value="AB+">AB+</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Upazila / Unit</label>
-                        <input type="text" id="editUnit" value="Dhaka South City" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                    </div>
-                </div>
+    // Helper: Show Alert Message
+    function showAlert(msg, isSuccess = true) {
+      const box = document.getElementById('alertBox');
+      box.className = `max-w-xl mx-auto mt-4 px-4 py-3 rounded text-sm text-center font-medium shadow-md ${isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+      box.innerText = msg;
+      box.classList.remove('hidden');
+      setTimeout(() => box.classList.add('hidden'), 5000);
+    }
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Institution / Campus Name</label>
-                    <input type="text" id="editInstitute" value="Dhaka University" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
+    // Helper: Show Section
+    function showSection(sectionId) {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('forgotPasswordSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
 
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('editProfileModal')" class="w-1/2 py-2 border rounded-xl font-medium text-xs text-gray-600">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-red-600', 'text-white');
+        btn.classList.add('bg-gray-100', 'text-gray-700');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+    }
 
-    <!-- DELEGATE POWER MODAL -->
-    <div id="delegateModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-share-nodes text-vbdRed"></i> Delegate Location Power
-                </h3>
-                <button onclick="closeModal('delegateModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
+    // LOGIN ACTION
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
 
-            <form onsubmit="confirmDelegation(event)" class="space-y-3">
-                <input type="hidden" id="delegateEventId">
-                <p class="text-xs text-gray-600">Enter team member present at venue to act as Location Beacon Lead:</p>
+      if (!email || !password) return showAlert('ইমেইল ও পাসওয়ার্ড প্রদান করুন', false);
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Delegate Lead Name *</label>
-                    <input type="text" id="delegateName" required placeholder="e.g. Tanvir Hossain (Co-lead)" class="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-vbdGreen">
-                </div>
+      showAlert('লগইন ভ্যালিডেশন হচ্ছে...', true);
 
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeModal('delegateModal')" class="w-1/2 py-2 border rounded-xl font-medium text-xs text-gray-600">Cancel</button>
-                    <button type="submit" class="w-1/2 py-2 bg-vbdRed text-white rounded-xl font-bold text-xs shadow hover:bg-red-700">Forward Power</button>
-                </div>
-            </form>
-        </div>
-    </div>
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=validateUserLogin&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+        const data = await res.json();
 
-    <!-- REGISTERED PARTICIPANTS LIST MODAL -->
-    <div id="registeredListModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3">
-                <div>
-                    <h3 id="regModalTitle" class="font-bold text-gray-800 text-base sm:text-lg">Registered Participants List</h3>
-                    <p class="text-[11px] text-vbdGreen"><i class="fa-solid fa-shield-halved"></i> Only listed members allowed for Geo Check-in</p>
-                </div>
-                <div class="flex gap-2">
-                    <button id="btnExportExcel" class="px-3 py-1.5 bg-vbdGreen text-white rounded-lg text-xs font-bold hover:bg-green-700 flex items-center gap-1">
-                        <i class="fa-solid fa-file-excel"></i> Export CSV
-                    </button>
-                    <button onclick="closeModal('registeredListModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-            </div>
-            
-            <div id="registeredListContent" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                <!-- Registered Participants Rendered Here -->
-            </div>
-        </div>
-    </div>
+        if (data.success) {
+          currentUser = data.permissions;
+          setupDashboard();
+        } else {
+          showAlert(data.message || 'ভুল তথ্য প্রদান করেছেন', false);
+        }
+      } catch (err) {
+        showAlert('সার্ভারের সাথে কানেক্ট করা যাচ্ছে না!', false);
+      }
+    }
 
-    <!-- MASTER ACCESS SHEET MODAL -->
-    <div id="masterAccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-4 sm:p-6 space-y-4 my-6 max-h-[92vh] flex flex-col relative">
-            
-            <div class="flex justify-between items-start border-b pb-3">
-                <div>
-                    <h3 class="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
-                        <span class="text-vbdYellow"><i class="fa-solid fa-key"></i></span>
-                        Master Access Sheet (Annual Permission Control)
-                    </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Update Gmail IDs to transfer admin roles yearly without losing history</p>
-                </div>
-                <button onclick="closeModal('masterAccessModal')" class="text-gray-400 hover:text-gray-600 p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
+    // DASHBOARD SETUP ACCORDING TO ROLE
+    function setupDashboard() {
+      showSection('dashboardSection');
+      document.getElementById('userInfoHeader').classList.remove('hidden');
+      document.getElementById('userRoleBadge').innerText = currentUser.role;
 
-            <div class="bg-gray-50 border rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <div class="flex items-center space-x-2 text-xs">
-                    <span class="font-bold text-gray-700">Active Board Tenure Year:</span>
-                    <select id="boardTenureYear" class="border rounded-lg px-2.5 py-1 text-xs font-bold text-vbdGreen bg-white outline-none focus:ring-1 focus:ring-vbdGreen">
-                        <option value="2026">2026 Session</option>
-                        <option value="2027">2027 Session</option>
-                        <option value="2028">2028 Session</option>
-                    </select>
-                </div>
-                <div class="text-[11px] text-vbdGreen font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-envelope-circle-check"></i> Emails dispatched via Central Mailer
-                </div>
-            </div>
+      // Master Access Option only for President and VP
+      if (currentUser.isDistrictPresidentOrVP) {
+        document.getElementById('tabMasterAccess').classList.remove('hidden');
+        loadMasterPermissions();
+      }
 
-            <div class="flex-1 overflow-y-auto space-y-4 pr-1 modal-scroll">
-                <div class="border border-red-200 bg-red-50/40 rounded-2xl p-4 space-y-3">
-                    <h4 class="font-bold text-vbdRed text-xs sm:text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-crown text-xs"></i> District Board Member Access (6 Positions)
-                    </h4>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div><label class="block text-[11px] text-gray-600 mb-1">Vice President Email</label><input type="email" value="vp.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                        <div><label class="block text-[11px] text-gray-600 mb-1">General Secretary Email</label><input type="email" value="gs.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                        <div><label class="block text-[11px] text-gray-600 mb-1">HR Secretary Email</label><input type="email" value="hr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                        <div><label class="block text-[11px] text-gray-600 mb-1">PR Secretary Email</label><input type="email" value="pr.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                        <div><label class="block text-[11px] text-gray-600 mb-1">Finance Secretary Email</label><input type="email" value="finance.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                        <div><label class="block text-[11px] text-gray-600 mb-1">Logistics Secretary Email</label><input type="email" value="logistics.dhakasouth@vbd.com" class="w-full border rounded-xl px-3 py-2 text-xs outline-none bg-white"></div>
-                    </div>
-                </div>
-            </div>
+      // Event Creation Button
+      if (currentUser.canCreateEvent) {
+        document.getElementById('btnCreateEvent').classList.remove('hidden');
+      }
+    }
 
-            <div class="pt-3 border-t flex justify-end gap-2">
-                <button type="button" onclick="closeModal('masterAccessModal')" class="px-5 py-2.5 border rounded-xl font-medium text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button type="button" onclick="saveAndSendAccessEmails()" class="px-5 py-2.5 bg-vbdGreen text-white rounded-xl font-bold text-xs shadow hover:bg-green-700 flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Save & Send Access Mails
-                </button>
-            </div>
-        </div>
-    </div>
+    // LOAD MASTER PERMISSIONS DATA
+    async function loadMasterPermissions() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getMasterPermissionsData&email=${encodeURIComponent(currentUser.email)}`);
+        const result = await res.json();
 
-    <script>
-        // SYSTEM DATA STATE
-        let currentUser = null;
-        let activeUpazilaFilter = 'all';
+        if (result.success && result.data) {
+          const d = result.data.district;
+          for (let p in d) {
+            let input = document.getElementById(`m_${p}`);
+            if (input) input.value = d[p];
+          }
 
-        let events = [
-            {
-                id: 'ev_1',
-                title: 'Youth Awareness Rally-2026',
-                upazila: 'Dhaka South City',
-                venue: 'Manikmia Avinew',
-                reportingTime: '09:00',
-                radius: 50,
-                activeLead: 'Sabbir Ahmed (HR Lead)',
-                sheetUrl: '',
-                leadLocationLat: null,
-                leadLocationLng: null,
-                isBeaconActive: false,
-                syncedVolunteers: [],
-                checkedInUsers: [],
-                checkedOutUsers: []
+          const u = result.data.upazilas;
+          for (let upz in u) {
+            for (let p in u[upz]) {
+              let input = document.getElementById(`m_${upz}_${p}`);
+              if (input) input.value = u[upz][p];
             }
-        ];
-
-        // USER LOGIN SIMULATION
-        function loginAs(role) {
-            if (role === 'district_president') {
-                currentUser = { name: 'District President', role: 'district_president', designation: 'President (District Board)', upazila: 'Dhaka South Central' };
-            } else if (role === 'hr_lead') {
-                currentUser = { name: 'Sabbir Ahmed (HR Lead)', role: 'hr_lead', designation: 'HR Secretary / In-Charge', upazila: 'Dhaka South City' };
-            } else if (role === 'registered_volunteer') {
-                currentUser = { name: 'Tanvir Hossain', role: 'general_volunteer', designation: 'Registered Volunteer', upazila: 'Dhaka South City', isSheetRegistered: true, stats: { attended: 4, late: 1, missed: 0, hours: 12 } };
-            } else {
-                currentUser = { name: 'Unregistered User', role: 'general_volunteer', designation: 'General Visitor (Not in Sheet)', upazila: 'Dhaka South City', isSheetRegistered: false, stats: { attended: 0, late: 0, missed: 0, hours: 0 } };
-            }
-
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            document.getElementById('navUserMenu').classList.remove('hidden');
-            
-            document.getElementById('navUserName').innerText = currentUser.name;
-            document.getElementById('navUserRole').innerText = currentUser.designation;
-
-            setupDashboardLayout();
-            renderEvents();
-            startBackgroundSheetSyncEngine();
+          }
         }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-        function setupDashboardLayout() {
-            const adminHeader = document.getElementById('adminActionHeader');
-            const upazilaFilter = document.getElementById('upazilaFilterContainer');
-            const volStats = document.getElementById('volunteerStatsCard');
-            const volProfile = document.getElementById('volunteerProfileCard');
-            const btnMaster = document.getElementById('btnMasterAccess');
-
-            if (currentUser.role === 'district_president') {
-                adminHeader.classList.remove('hidden');
-                upazilaFilter.classList.remove('hidden');
-                volStats.classList.add('hidden');
-                volProfile.classList.add('hidden');
-                btnMaster.classList.remove('hidden');
-            } else if (currentUser.role === 'hr_lead') {
-                adminHeader.classList.remove('hidden');
-                upazilaFilter.classList.add('hidden');
-                volStats.classList.add('hidden');
-                volProfile.classList.add('hidden');
-                btnMaster.classList.add('hidden');
-            } else {
-                adminHeader.classList.add('hidden');
-                upazilaFilter.classList.add('hidden');
-                volStats.classList.remove('hidden');
-                volProfile.classList.remove('hidden');
-                btnMaster.classList.add('hidden');
-
-                document.getElementById('profileNameDisplay').innerText = currentUser.name;
-                document.getElementById('statAttended').innerText = currentUser.stats.attended;
-                document.getElementById('statLate').innerText = currentUser.stats.late;
-                document.getElementById('statMissed').innerText = currentUser.stats.missed;
-                document.getElementById('statHours').innerText = currentUser.stats.hours + 'h';
-            }
+    // SAVE MASTER PERMISSIONS DATA
+    async function saveMasterPermissions() {
+      const updatedData = {
+        district: {
+          DISTRICT_PRESIDENT: document.getElementById('m_DISTRICT_PRESIDENT').value,
+          DISTRICT_VP: document.getElementById('m_DISTRICT_VP').value,
+          DISTRICT_GS: document.getElementById('m_DISTRICT_GS').value,
+          DISTRICT_TREASURER: document.getElementById('m_DISTRICT_TREASURER').value,
+          DISTRICT_HRO: document.getElementById('m_DISTRICT_HRO').value,
+          DISTRICT_PO: document.getElementById('m_DISTRICT_PO').value
+        },
+        upazilas: {
+          "DSCC": {
+            UPAZILA_PRESIDENT: document.getElementById('m_DSCC_UPAZILA_PRESIDENT').value,
+            UPAZILA_GS: document.getElementById('m_DSCC_UPAZILA_GS').value,
+            UPAZILA_HRS: document.getElementById('m_DSCC_UPAZILA_HRS').value,
+            UPAZILA_PROJECT_SEC: document.getElementById('m_DSCC_UPAZILA_PROJECT_SEC').value
+          },
+          "Keraniganj": {
+            UPAZILA_PRESIDENT: document.getElementById('m_Keraniganj_UPAZILA_PRESIDENT').value,
+            UPAZILA_GS: document.getElementById('m_Keraniganj_UPAZILA_GS').value,
+            UPAZILA_HRS: document.getElementById('m_Keraniganj_UPAZILA_HRS').value,
+            UPAZILA_PROJECT_SEC: document.getElementById('m_Keraniganj_UPAZILA_PROJECT_SEC').value
+          }
         }
+      };
 
-        // FIXED GOOGLE SHEET CSV PARSER & EMAIL DISPATCHER
-        function fetchAndSyncGoogleSheet(eventObj) {
-            if (!eventObj.sheetUrl) return;
+      showAlert('পারমিশন আপডেট সেভ হচ্ছে...', true);
 
-            const matches = eventObj.sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            if (!matches || !matches[1]) return;
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=updateMasterPermissions&email=${encodeURIComponent(currentUser.email)}`, {
+          method: 'POST',
+          body: JSON.stringify(updatedData)
+        });
+        const data = await res.json();
+        showAlert(data.message, data.success);
+      } catch (err) {
+        showAlert('আপডেট করতে সমস্যা হয়েছে!', false);
+      }
+    }
 
-            const sheetId = matches[1];
-            const csvExportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+    // REQUEST OTP
+    async function requestOTP() {
+      const email = document.getElementById('resetEmail').value.trim();
+      if (!email) return showAlert('ইমেইল অ্যাড্রেস লিখুন', false);
 
-            fetch(csvExportUrl)
-                .then(res => res.text())
-                .then(csvText => {
-                    const lines = csvText.split('\n').filter(line => line.trim() !== '');
-                    if (lines.length <= 1) return;
+      showAlert('এইচআর ইমেইল থেকে ওটিপি পাঠানো হচ্ছে...', true);
+      const res = await fetch(`${SCRIPT_URL}?action=sendPasswordResetOTP&email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      showAlert(data.message, data.success);
+    }
 
-                    let newMemberCount = 0;
-                    
-                    for (let i = 1; i < lines.length; i++) {
-                        const cols = lines[i].split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
-                        
-                        const name = cols[1] || cols[0] || "Registered Volunteer";
-                        const email = cols[2] || "user@example.com";
-                        const phone = cols[3] || "01700000000";
-                        const blood = cols[4] || "O+";
+    // SUBMIT RESET PASSWORD
+    async function submitResetPassword() {
+      const email = document.getElementById('resetEmail').value.trim();
+      const otp = document.getElementById('otpCode').value.trim();
+      const pass = document.getElementById('newPassword').value.trim();
 
-                        const exists = eventObj.syncedVolunteers.some(v => v.email === email || v.name === name);
-                        if (!exists) {
-                            newMemberCount++;
-                            const newProfileLink = `https://vbd-dhakasouth.org/profile?user=${encodeURIComponent(name)}`;
-                            
-                            eventObj.syncedVolunteers.push({
-                                name, email, phone, blood,
-                                isFirstTime: true,
-                                profileLink: newProfileLink
-                            });
+      if (!email || !otp || !pass) return showAlert('সব তথ্য দিন', false);
 
-                            // DIRECT EMAIL SEND VIA EMAILJS SDK
-                            const emailParams = {
-                                to_name: name,
-                                to_email: email,
-                                event_title: eventObj.title,
-                                profile_url: newProfileLink,
-                                reporting_time: eventObj.reportingTime
-                            };
+      const res = await fetch(`${SCRIPT_URL}?action=verifyOTPAndResetPassword&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&password=${encodeURIComponent(pass)}`);
+      const data = await res.json();
+      showAlert(data.message, data.success);
+      if (data.success) showSection('loginSection');
+    }
 
-                            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
-                                .then(() => console.log("Direct Email Sent to: " + email))
-                                .catch(() => console.warn("EmailJS Notice: Email dispatched via system logger. Add Service ID to go live."));
-
-                            alert(`[AUTOMATED CENTRAL EMAIL SENT]\nTo: ${email}\n\nDear ${name},\nThank you for registering! Your volunteer profile link for ${eventObj.title} is:\n${newProfileLink}`);
-                        }
-                    }
-
-                    if (newMemberCount > 0) {
-                        renderEvents();
-                    }
-                })
-                .catch(err => {
-                    console.warn("Sheet Reader Note: Ensure Google Sheet link has 'Anyone with link can view' permission enabled.");
-                });
-        }
-
-        function startBackgroundSheetSyncEngine() {
-            setInterval(() => {
-                events.forEach(ev => fetchAndSyncGoogleSheet(ev));
-            }, 8000);
-        }
-
-        // RENDER EVENTS WITH "VIEW SHEET" & "SYNCED (X)" COUNTER RESTORED
-        function renderEvents() {
-            const container = document.getElementById('eventsContainer');
-            container.innerHTML = '';
-
-            const filteredEvents = events.filter(ev => {
-                if (currentUser.role === 'hr_lead') return true;
-                if (activeUpazilaFilter === 'all') return true;
-                return ev.upazila === activeUpazilaFilter;
-            });
-
-            filteredEvents.forEach(ev => {
-                const totalRegistered = ev.syncedVolunteers.length;
-                const isCheckedIn = ev.checkedInUsers.includes(currentUser.name);
-                const isCheckedOut = ev.checkedOutUsers.includes(currentUser.name);
-
-                const isAssignedLead = currentUser.name === ev.activeLead;
-                const canManage = (currentUser.role === 'district_president') || isAssignedLead;
-
-                container.innerHTML += `
-                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 space-y-3 relative">
-                        <!-- TOP RIGHT: SYNCED (X) COUNTER BUTTON & CONTROLS -->
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-vbdGreen border border-green-200">${ev.upazila}</span>
-                            
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="viewRegisteredList('${ev.id}')" class="text-xs bg-green-50 text-vbdGreen border border-green-200 px-2 py-1 rounded-lg hover:bg-green-100 font-bold flex items-center gap-1">
-                                    <i class="fa-solid fa-file-excel text-vbdGreen"></i> Synced (${totalRegistered})
-                                </button>
-                                ${canManage ? `
-                                    <button onclick="editEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-pen text-vbdGreen"></i></button>
-                                    <button onclick="deleteEvent('${ev.id}')" class="text-xs bg-gray-100 p-1.5 rounded-md hover:bg-gray-200"><i class="fa-solid fa-trash text-vbdRed"></i></button>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-gray-800 text-sm sm:text-base">${ev.title}</h4>
-                            <p class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-location-dot text-vbdRed mr-1"></i>${ev.venue} | <i class="fa-regular fa-clock text-vbdGreen ml-1"></i> Reporting: <b>${ev.reportingTime} AM</b></p>
-                        </div>
-
-                        <!-- RESTORED: GOOGLE SHEET AUTO SYNC & VIEW SHEET LINK -->
-                        <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 flex justify-between items-center">
-                            <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-rotate text-emerald-600 animate-spin"></i> Google Sheet Auto-Synced</span>
-                            ${ev.sheetUrl ? `<a href="${ev.sheetUrl}" target="_blank" class="font-bold underline text-vbdGreen hover:text-green-800">View Sheet</a>` : `<span class="text-[10px] text-vbdRed italic">No Sheet Linked</span>`}
-                        </div>
-
-                        <!-- HR PROXIMITY & BEACON CONTROL PANEL -->
-                        <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-2">
-                            <div class="flex justify-between items-center text-[10px] sm:text-[11px] text-gray-600 border-b pb-1">
-                                <span>Venue Host: <b class="text-vbdGreen">${ev.activeLead}</b></span>
-                                <span>Radius: <b class="text-vbdRed">${ev.radius} Meters</b></span>
-                            </div>
-
-                            ${isAssignedLead || currentUser.role === 'district_president' ? `
-                                <div class="space-y-1.5">
-                                    ${!ev.isBeaconActive ? `
-                                        <button onclick="activateHrBeacon('${ev.id}')" class="w-full py-2 bg-vbdRed text-white font-bold rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1.5">
-                                            <i class="fa-solid fa-tower-cell animate-pulse"></i> Activate Venue Check-in Pin
-                                        </button>
-                                    ` : `
-                                        <div class="bg-green-100 text-vbdGreen p-2 rounded-lg text-center font-bold text-xs flex justify-between items-center">
-                                            <span><i class="fa-solid fa-circle-check text-vbdGreen mr-1"></i> HR Beacon Active</span>
-                                            <span class="text-[10px] bg-vbdGreen text-white px-2 py-0.5 rounded">Live Pin</span>
-                                        </div>
-                                    `}
-                                    <button onclick="openDelegateModal('${ev.id}')" class="w-full py-1.5 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 text-[11px] flex items-center justify-center gap-1">
-                                        <i class="fa-solid fa-share-nodes text-vbdRed"></i> Forward Location Power
-                                    </button>
-                                </div>
-                            ` : ''}
-
-                            ${!isCheckedIn ? `
-                                <button onclick="triggerProximityCheckIn('${ev.id}')" class="w-full py-2 ${ev.isBeaconActive ? 'bg-vbdGreen hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-bold rounded-lg transition flex items-center justify-center gap-1">
-                                    <i class="fa-solid fa-location-crosshairs"></i> Geo Check-In (Within ${ev.radius}m)
-                                </button>
-                                ${!ev.isBeaconActive ? `<p class="text-[9px] text-center text-vbdRed font-medium">* Pin activates before ${ev.reportingTime} AM</p>` : ''}
-                            ` : !isCheckedOut ? `
-                                <div class="space-y-1">
-                                    <div class="bg-green-100 text-vbdGreen p-1.5 rounded text-center font-bold text-[11px]">
-                                        <i class="fa-solid fa-circle-check"></i> Attendance Marked
-                                    </div>
-                                    <button onclick="triggerCheckOut('${ev.id}')" class="w-full py-2 bg-vbdRed text-white font-bold rounded-lg hover:bg-red-700 transition">
-                                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Check-Out (End Duty)
-                                    </button>
-                                </div>
-                            ` : `
-                                <div class="bg-gray-200 text-gray-700 p-2 rounded text-center font-bold">
-                                    <i class="fa-solid fa-flag-checkered mr-1"></i> Attendance Completed
-                                </div>
-                            `}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // HR ACTIVATES BEACON
-        function activateHrBeacon(eventId) {
-            if (!navigator.geolocation) {
-                alert("GPS Geolocation is required on your mobile device.");
-                return;
-            }
-
-            const ev = events.find(e => e.id === eventId);
-
-            navigator.geolocation.getCurrentPosition((pos) => {
-                ev.leadLocationLat = pos.coords.latitude;
-                ev.leadLocationLng = pos.coords.longitude;
-                ev.isBeaconActive = true;
-
-                alert(`Venue Pin Activated successfully!\nRegistered volunteers can now check-in within ${ev.radius} meters of your location.`);
-                renderEvents();
-            }, () => {
-                alert("Please enable GPS permissions on your device.");
-            });
-        }
-
-        // DELEGATE POWER
-        function openDelegateModal(eventId) {
-            document.getElementById('delegateEventId').value = eventId;
-            document.getElementById('delegateModal').classList.remove('hidden');
-        }
-
-        function confirmDelegation(e) {
-            e.preventDefault();
-            const eventId = document.getElementById('delegateEventId').value;
-            const newLead = document.getElementById('delegateName').value;
-            const ev = events.find(e => e.id === eventId);
-
-            ev.activeLead = newLead;
-            ev.isBeaconActive = false;
-            ev.leadLocationLat = null;
-            ev.leadLocationLng = null;
-
-            closeModal('delegateModal');
-            alert(`Location Power Forwarded to ${newLead}.`);
-            renderEvents();
-        }
-
-        // VOLUNTEER PROXIMITY CHECK-IN LOGIC WITH STRICT SHEET REGISTRATION CHECK
-        function triggerProximityCheckIn(eventId) {
-            const ev = events.find(e => e.id === eventId);
-
-            if (!ev.isBeaconActive) {
-                alert("The HR Lead has not activated the venue pin yet.");
-                return;
-            }
-
-            const isUserInSheet = ev.syncedVolunteers.some(v => v.name === currentUser.name) || currentUser.isSheetRegistered;
-
-            if (!isUserInSheet) {
-                alert("STRICT ACCESS DENIED!\n\nYour name is not found in the Google Sheet Registration List for this event. Only registered participants can check-in.");
-                return;
-            }
-
-            if (!navigator.geolocation) {
-                alert("GPS Geolocation is required on your mobile device.");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const userLat = pos.coords.latitude;
-                const userLng = pos.coords.longitude;
-                const distance = getDistanceFromLatLonInMeters(userLat, userLng, ev.leadLocationLat, ev.leadLocationLng);
-
-                if (distance <= ev.radius) {
-                    if (!ev.checkedInUsers.includes(currentUser.name)) {
-                        ev.checkedInUsers.push(currentUser.name);
-                    }
-                    alert(`Check-In Verified!\nYou are within ${Math.round(distance)} meters of HR Lead (${ev.activeLead}). Attendance marked.`);
-                    renderEvents();
-                } else {
-                    alert(`Check-In Failed!\nYou are ${Math.round(distance)} meters away from HR / Lead. You must be within ${ev.radius} meters.`);
-                }
-            }, () => {
-                alert("Please enable GPS on your mobile device.");
-            });
-        }
-
-        function triggerCheckOut(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            if (!ev.checkedOutUsers.includes(currentUser.name)) {
-                ev.checkedOutUsers.push(currentUser.name);
-            }
-            alert("Check-out Successful!");
-            renderEvents();
-        }
-
-        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371000;
-            const dLat = (lat2 - lat1) * (Math.PI/180);
-            const dLon = (lon2 - lon1) * (Math.PI/180);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2); 
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
-
-        // VIEW REGISTERED PARTICIPANTS LIST MODAL
-        function viewRegisteredList(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            document.getElementById('regModalTitle').innerText = `Registered Participants: ${ev.title}`;
-            
-            const btnExport = document.getElementById('btnExportExcel');
-            btnExport.onclick = () => exportToCSV(ev);
-
-            const container = document.getElementById('registeredListContent');
-            container.innerHTML = '';
-
-            if (ev.syncedVolunteers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No registered participants found in Google Sheet yet. Make sure sheet permission is set to 'Anyone with link can view'.</p>`;
-            } else {
-                ev.syncedVolunteers.forEach((v, i) => {
-                    container.innerHTML += `
-                        <div class="bg-gray-50 p-3 rounded-xl border text-xs space-y-1">
-                            <div class="flex justify-between font-bold text-gray-800">
-                                <span>${i + 1}. ${v.name} (${v.blood})</span>
-                                <span class="text-vbdGreen">${v.phone}</span>
-                            </div>
-                            <div class="text-gray-500 text-[11px] flex justify-between items-center pt-1 border-t mt-1">
-                                <span>Email: ${v.email}</span>
-                                <span class="text-blue-600 font-semibold"><i class="fa-solid fa-paper-plane mr-1"></i> Auto-Mail Sent</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            document.getElementById('registeredListModal').classList.remove('hidden');
-        }
-
-        function exportToCSV(ev) {
-            if (ev.syncedVolunteers.length === 0) {
-                alert("No registered data to export!");
-                return;
-            }
-
-            let csv = "SL,Name,Email,Phone,Blood Group,Profile Link\n";
-            ev.syncedVolunteers.forEach((v, i) => {
-                csv += `"${i + 1}","${v.name}","${v.email}","${v.phone}","${v.blood}","${v.profileLink}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${ev.title}_Registered_Participants.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function saveEvent(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editingEventId').value;
-            const title = document.getElementById('evTitle').value;
-            const upazila = document.getElementById('evUpazila').value;
-            const venue = document.getElementById('evVenue').value;
-            const reportingTime = document.getElementById('evReportingTime').value;
-            const sheetUrl = document.getElementById('evSheetUrl').value;
-            const radius = parseInt(document.getElementById('evRadius').value);
-            const activeLead = document.getElementById('evLead').value;
-
-            let targetEv;
-            if (editId) {
-                targetEv = events.find(e => e.id === editId);
-                targetEv.title = title; targetEv.upazila = upazila; targetEv.venue = venue;
-                targetEv.reportingTime = reportingTime; targetEv.sheetUrl = sheetUrl; 
-                targetEv.radius = radius; targetEv.activeLead = activeLead;
-            } else {
-                targetEv = {
-                    id: 'ev_' + Date.now(),
-                    title, upazila, venue, reportingTime, sheetUrl, radius, activeLead,
-                    leadLocationLat: null, leadLocationLng: null, isBeaconActive: false,
-                    syncedVolunteers: [], checkedInUsers: [], checkedOutUsers: []
-                };
-                events.unshift(targetEv);
-            }
-
-            closeModal('eventModal');
-            renderEvents();
-
-            fetchAndSyncGoogleSheet(targetEv);
-            alert("Event Saved! Fetching Google Sheet data...");
-        }
-
-        function openCreateEventModal() {
-            document.getElementById('editingEventId').value = '';
-            document.getElementById('modalTitle').innerText = "Create Event & Link Google Sheet";
-            document.getElementById('eventModal').classList.remove('hidden');
-        }
-
-        function editEvent(id) {
-            const ev = events.find(e => e.id === id);
-            document.getElementById('editingEventId').value = ev.id;
-            document.getElementById('evTitle').value = ev.title;
-            document.getElementById('evUpazila').value = ev.upazila;
-            document.getElementById('evVenue').value = ev.venue;
-            document.getElementById('evReportingTime').value = ev.reportingTime || '09:00';
-            document.getElementById('evSheetUrl').value = ev.sheetUrl || '';
-            document.getElementById('evRadius').value = ev.radius;
-            document.getElementById('evLead').value = ev.activeLead;
-
-            document.getElementById('eventModal').classList.remove('hidden');
-        }
-
-        function deleteEvent(id) {
-            if (confirm("Are you sure you want to delete this event?")) {
-                events = events.filter(e => e.id !== id);
-                renderEvents();
-            }
-        }
-
-        function openEditProfileModal() {
-            document.getElementById('editProfileModal').classList.remove('hidden');
-        }
-
-        function saveProfileCustomization(e) {
-            e.preventDefault();
-            const name = document.getElementById('editName').value;
-            const blood = document.getElementById('editBlood').value;
-            const unit = document.getElementById('editUnit').value;
-
-            document.getElementById('profileNameDisplay').innerText = name;
-            document.getElementById('profileDetailDisplay').innerText = `${unit} Unit | ${blood}`;
-            closeModal('editProfileModal');
-            alert("Profile Customized Successfully!");
-        }
-
-        function openMasterAccessModal() {
-            document.getElementById('masterAccessModal').classList.remove('hidden');
-        }
-
-        function saveAndSendAccessEmails() {
-            alert("Master Access Emails Saved!");
-            closeModal('masterAccessModal');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function filterUpazila(unit) {
-            activeUpazilaFilter = unit;
-            document.querySelectorAll('.upazila-btn').forEach(btn => {
-                if (btn.dataset.unit === unit) {
-                    btn.className = 'upazila-btn p-2 border rounded-lg bg-vbdGreen text-white font-bold';
-                } else {
-                    btn.className = 'upazila-btn p-2 border rounded-lg bg-gray-50 font-bold';
-                }
-            });
-            renderEvents();
-        }
-
-        function logout() {
-            document.getElementById('authSection').classList.remove('hidden');
-            document.getElementById('dashboardSection').classList.add('hidden');
-            document.getElementById('navUserMenu').classList.add('hidden');
-        }
-    </script>
+    // LOGOUT
+    function logout() {
+      currentUser = null;
+      document.getElementById('userInfoHeader').classList.add('hidden');
+      showSection('loginSection');
+    }
+  </script>
 </body>
 </html>
