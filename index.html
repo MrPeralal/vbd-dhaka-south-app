@@ -1,397 +1,458 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VBD Dhaka District South - Master Portal</title>
-  <!-- Tailwind CSS CDN -->
+  <title>VBD Portal - Volunteer Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
-    body { font-family: 'Hind Siliguri', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+    .vbd-sidebar { background-color: #064E3B; }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800">
+<body class="flex min-h-screen text-slate-800">
 
-  <!-- TOP NAVBAR -->
-  <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <div class="bg-white text-red-600 font-bold px-2 py-1 rounded text-xl">VBD</div>
+  <!-- LEFT SIDEBAR -->
+  <aside id="sidebar" class="w-64 vbd-sidebar text-white flex flex-col justify-between p-4 hidden md:flex min-h-screen sticky top-0">
+    <div>
+      <div class="flex items-center space-x-3 mb-8 px-2">
+        <div class="bg-white text-emerald-900 font-extrabold px-2.5 py-1 rounded text-xl">VBD</div>
         <div>
-          <h1 class="font-bold text-lg leading-tight">Volunteer for Bangladesh</h1>
-          <p class="text-xs text-red-100">Dhaka District South Zone</p>
+          <h1 class="font-bold text-base leading-tight">VBD Portal</h1>
+          <p class="text-[10px] text-emerald-200 uppercase font-semibold">VOLUNTEER HUB</p>
         </div>
       </div>
-      <div id="userInfoHeader" class="hidden flex items-center space-x-3">
-        <span id="userRoleBadge" class="bg-red-800 text-xs px-2.5 py-1 rounded-full font-semibold">General Volunteer</span>
-        <button onclick="logout()" class="text-xs bg-white text-red-600 px-3 py-1.5 rounded font-bold hover:bg-red-50">লগআউট</button>
-      </div>
-    </div>
-  </nav>
 
-  <!-- ALERT MESSAGES -->
-  <div id="alertBox" class="hidden max-w-xl mx-auto mt-4 px-4 py-3 rounded text-sm text-center font-medium shadow-md"></div>
+      <nav class="space-y-1 text-sm font-medium">
+        <button onclick="switchTab('dashboardTab')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-emerald-800 transition text-emerald-100">
+          <i class="fa-solid fa-house w-5"></i> <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('eventsTab')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-emerald-800 transition text-emerald-100">
+          <i class="fa-solid fa-calendar-days w-5"></i> <span>Events</span>
+        </button>
+        <button onclick="switchTab('profileTab')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-emerald-800 transition text-emerald-100">
+          <i class="fa-solid fa-circle-user w-5"></i> <span>My Profile</span>
+        </button>
 
-  <!-- CONTAINER -->
-  <div class="max-w-7xl mx-auto px-4 py-6">
-
-    <!-- 1. LOGIN SECTION -->
-    <div id="loginSection" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
-      <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">পোর্টাল লগইন</h2>
-      <p class="text-xs text-center text-gray-500 mb-6">আপনার রেজিস্টার্ড ইমেইল ও পাসওয়ার্ড প্রদান করুন</p>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">ইমেইল এড্রেস</label>
-          <input type="email" id="loginEmail" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="example@vbd.com.bd">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">পাসওয়ার্ড</label>
-          <input type="password" id="loginPassword" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="••••••••">
-        </div>
-        <button onclick="handleLogin()" id="btnLogin" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded text-sm transition">লগইন করুন</button>
-        <div class="text-right">
-          <button onclick="showSection('forgotPasswordSection')" class="text-xs text-red-600 font-semibold hover:underline">পাসওয়ার্ড ভুলে গেছেন?</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. FORGOT PASSWORD & OTP SECTION -->
-    <div id="forgotPasswordSection" class="hidden max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-100">
-      <h2 class="text-xl font-bold text-center text-gray-800 mb-2">পাসওয়ার্ড রিসেট</h2>
-      <p class="text-xs text-center text-gray-500 mb-6">এইচআর অফিসারের থেকে ওটিপি ইমেইলে যাবে</p>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">ইমেইল এড্রেস</label>
-          <div class="flex space-x-2">
-            <input type="email" id="resetEmail" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="your.email@vbd.com.bd">
-            <button onclick="requestOTP()" class="bg-gray-800 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap">OTP পাঠান</button>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">৬ ডিজিট OTP কোড</label>
-          <input type="text" id="otpCode" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="123456">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">নতুন পাসওয়ার্ড</label>
-          <input type="password" id="newPassword" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500" placeholder="নতুন পাসওয়ার্ড দিন">
-        </div>
-        <button onclick="submitResetPassword()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded text-sm transition">পাসওয়ার্ড আপডেট করুন</button>
-        <div class="text-center">
-          <button onclick="showSection('loginSection')" class="text-xs text-gray-600 font-semibold hover:underline">লগইন পেজে ফিরে যান</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. DASHBOARD MAIN CONTAINER -->
-    <div id="dashboardSection" class="hidden space-y-6">
-      
-      <!-- NAV TABS FOR DASHBOARD -->
-      <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-200 flex flex-wrap gap-2">
-        <button onclick="switchTab('eventsTab')" id="tabEvents" class="tab-btn active bg-red-600 text-white px-4 py-2 rounded text-xs font-bold">চলতি ইভেন্টসমূহ</button>
-        <button onclick="switchTab('archiveTab')" id="tabArchive" class="tab-btn bg-gray-100 text-gray-700 px-4 py-2 rounded text-xs font-bold hover:bg-gray-200">বাৎসরিক আর্কাভ হিস্ট্রি</button>
-        <button onclick="switchTab('masterAccessTab')" id="tabMasterAccess" class="tab-btn hidden bg-yellow-500 text-white px-4 py-2 rounded text-xs font-bold hover:bg-yellow-600"><i class="fa-solid fa-user-shield mr-1"></i> Master Access Sheet</button>
-      </div>
-
-      <!-- TAB 1: EVENTS -->
-      <div id="eventsTab" class="tab-content space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-lg text-gray-800">অ্যাক্টিভ ও পেন্ডিং ইভেন্টসমূহ</h3>
-          <button id="btnCreateEvent" onclick="openCreateEventModal()" class="hidden bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-2 rounded shadow">
-            <i class="fa-solid fa-plus mr-1"></i> নতুন ইভেন্ট তৈরি
+        <div id="managementNav" class="pt-6 hidden">
+          <p class="text-[10px] uppercase font-bold text-emerald-300 tracking-wider mb-2 px-3">Management</p>
+          <button onclick="switchTab('manageEventsTab')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-emerald-800 transition text-emerald-100">
+            <i class="fa-solid fa-list-check w-5"></i> <span>Manage Events</span>
           </button>
         </div>
-        <div id="eventList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Dynamically Loaded Events -->
+      </nav>
+    </div>
+
+    <div class="border-t border-emerald-800 pt-4">
+      <div class="flex items-center space-x-3 mb-3 px-2">
+        <img id="sidebarUserImg" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border-2 border-white object-cover">
+        <div class="overflow-hidden">
+          <p id="sidebarUserName" class="text-xs font-bold truncate">User Name</p>
+          <p id="sidebarUserRole" class="text-[10px] text-emerald-200 truncate">Volunteer</p>
         </div>
       </div>
+      <button onclick="logout()" class="w-full flex items-center space-x-2 text-xs text-emerald-200 hover:text-white px-2 py-1">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+      </button>
+    </div>
+  </aside>
 
-      <!-- TAB 2: ARCHIVE HISTORY -->
-      <div id="archiveTab" class="tab-content hidden space-y-4">
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
-          <h3 class="font-bold text-sm text-gray-800">পূর্ববর্তী সেশনের ডাটা দেখার আর্কাভ</h3>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-semibold">সেশন বছর:</span>
-            <select id="archiveYearSelect" onchange="loadArchiveData()" class="border border-gray-300 rounded px-2 py-1 text-xs font-bold">
-              <option value="2026">2026 Session</option>
-              <option value="2025">2025 Session</option>
-              <option value="2024">2024 Session</option>
-            </select>
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+
+    <div id="alertBox" class="hidden mb-6 p-4 rounded-xl text-sm font-semibold shadow-sm"></div>
+
+    <!-- 1. LOGIN / SIGNUP -->
+    <div id="authContainer" class="max-w-md mx-auto mt-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+      
+      <div id="loginForm">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1 text-center">Welcome Back</h2>
+        <p class="text-xs text-slate-500 text-center mb-6">Sign in to access your VBD Portal</p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+            <input type="email" id="loginEmail" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-emerald-600">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <input type="password" id="loginPassword" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-emerald-600">
+          </div>
+          <button onclick="handleLogin()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm transition">Log In</button>
+          
+          <div class="text-center pt-4">
+            <button onclick="toggleAuth('signup')" class="text-emerald-700 text-xs font-bold hover:underline">New Volunteer? Create Profile</button>
           </div>
         </div>
-        <div id="archiveEventList" class="space-y-2">
-          <!-- Archive Loaded Here -->
-        </div>
       </div>
 
-      <!-- TAB 3: MASTER ACCESS SHEET (ANNUAL HANDOVER PANEL) -->
-      <div id="masterAccessTab" class="tab-content hidden space-y-6">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
-          <div class="border-b pb-4 flex justify-between items-center">
+      <div id="signupForm" class="hidden">
+        <h2 class="text-2xl font-bold text-slate-800 mb-1 text-center">Create Profile</h2>
+        <p class="text-xs text-slate-500 text-center mb-6">Join VBD Geo-Attendance Portal</p>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+            <input type="text" id="signupName" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+            <input type="email" id="signupEmail" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+            <input type="tel" id="signupPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
             <div>
-              <h3 class="font-bold text-lg text-gray-800">Master Access Sheet (Annual Permission Control)</h3>
-              <p class="text-xs text-gray-500">বাৎসরিক দায়িত্ব হস্তান্তরের জন্য মেম্বারদের ইমেইল পরিবর্তন করুন</p>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Upazila / Hub *</label>
+              <select id="signupUpazila" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white">
+                <option value="DSCC">DSCC</option>
+                <option value="Keraniganj">Keraniganj</option>
+                <option value="Dohar">Dohar</option>
+                <option value="Nawabganj">Nawabganj</option>
+                <option value="District">District Board</option>
+              </select>
             </div>
-            <button onclick="saveMasterPermissions()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs shadow">
-              <i class="fa-solid fa-save mr-1"></i> Save & Send Access Mails
-            </button>
-          </div>
-
-          <!-- DISTRICT BOARD SECTION -->
-          <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-            <h4 class="font-bold text-sm text-red-800 mb-3 border-b border-red-200 pb-1"><i class="fa-solid fa-crown mr-1"></i> District Board Access (Central)</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-              <div>
-                <label class="font-semibold block mb-1">President Email</label>
-                <input type="email" id="m_DISTRICT_PRESIDENT" class="w-full border rounded px-2 py-1.5">
-              </div>
-              <div>
-                <label class="font-semibold block mb-1">Vice President Email</label>
-                <input type="email" id="m_DISTRICT_VP" class="w-full border rounded px-2 py-1.5">
-              </div>
-              <div>
-                <label class="font-semibold block mb-1">General Secretary Email</label>
-                <input type="email" id="m_DISTRICT_GS" class="w-full border rounded px-2 py-1.5">
-              </div>
-              <div>
-                <label class="font-semibold block mb-1">Treasurer Email</label>
-                <input type="email" id="m_DISTRICT_TREASURER" class="w-full border rounded px-2 py-1.5">
-              </div>
-              <div>
-                <label class="font-semibold block mb-1">HR Officer Email (Auto Mailer)</label>
-                <input type="email" id="m_DISTRICT_HRO" class="w-full border rounded px-2 py-1.5 bg-yellow-50">
-              </div>
-              <div>
-                <label class="font-semibold block mb-1">Program Officer Email</label>
-                <input type="email" id="m_DISTRICT_PO" class="w-full border rounded px-2 py-1.5">
-              </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Designation</label>
+              <input type="text" id="signupDesignation" placeholder="General Volunteer" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
             </div>
           </div>
-
-          <!-- UPAZILA BOARDS SECTION -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- DSCC -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
-              <h5 class="font-bold text-gray-700 border-b pb-1">DSCC Upazila Board</h5>
-              <div><label class="block">President:</label><input type="email" id="m_DSCC_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">General Secretary:</label><input type="email" id="m_DSCC_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">HR Secretary:</label><input type="email" id="m_DSCC_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">Project Secretary:</label><input type="email" id="m_DSCC_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
-            </div>
-
-            <!-- KERANIGANJ -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
-              <h5 class="font-bold text-gray-700 border-b pb-1">Keraniganj Upazila Board</h5>
-              <div><label class="block">President:</label><input type="email" id="m_Keraniganj_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">General Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">HR Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">Project Secretary:</label><input type="email" id="m_Keraniganj_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
-            </div>
-
-            <!-- DOHAR -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
-              <h5 class="font-bold text-gray-700 border-b pb-1">Dohar Upazila Board</h5>
-              <div><label class="block">President:</label><input type="email" id="m_Dohar_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">General Secretary:</label><input type="email" id="m_Dohar_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">HR Secretary:</label><input type="email" id="m_Dohar_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">Project Secretary:</label><input type="email" id="m_Dohar_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
-            </div>
-
-            <!-- NAWABGANJ -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2 text-xs">
-              <h5 class="font-bold text-gray-700 border-b pb-1">Nawabganj Upazila Board</h5>
-              <div><label class="block">President:</label><input type="email" id="m_Nawabganj_UPAZILA_PRESIDENT" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">General Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_GS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">HR Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_HRS" class="w-full border rounded px-2 py-1"></div>
-              <div><label class="block">Project Secretary:</label><input type="email" id="m_Nawabganj_UPAZILA_PROJECT_SEC" class="w-full border rounded px-2 py-1"></div>
-            </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
+            <input type="password" id="signupPassword" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <button onclick="handleSignUp()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm transition mt-2">Sign Up</button>
+          
+          <div class="text-center pt-2">
+            <button onclick="toggleAuth('login')" class="text-xs text-slate-500 font-bold hover:underline">Already registered? Log In</button>
           </div>
         </div>
       </div>
 
     </div>
-  </div>
 
-  <!-- JAVASCRIPT LOGIC CONNECTED TO APPS SCRIPT -->
+    <!-- 2. MAIN APP DASHBOARD -->
+    <div id="appContainer" class="hidden max-w-6xl mx-auto space-y-6">
+
+      <!-- DASHBOARD TAB -->
+      <div id="dashboardTab" class="tab-content space-y-6">
+        <h2 id="welcomeText" class="text-2xl font-bold text-slate-800">Hello, Volunteer! 👋</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-emerald-900 text-white rounded-2xl p-6 relative overflow-hidden shadow-lg border border-emerald-800">
+            <div class="flex items-center space-x-4 mb-4">
+              <img id="idCardPhoto" src="https://via.placeholder.com/80" class="w-16 h-16 rounded-full border-2 border-emerald-400 object-cover">
+              <div>
+                <h3 id="idCardName" class="font-bold text-base uppercase leading-tight">USER NAME</h3>
+                <p id="idCardRole" class="text-xs text-emerald-200 font-semibold">VOLUNTEER</p>
+                <p id="idCardVbdId" class="text-[10px] text-emerald-300 mt-1">VBD ID: #00000</p>
+              </div>
+            </div>
+            <div class="flex justify-between items-end border-t border-emerald-800 pt-3">
+              <div>
+                <p class="text-[9px] uppercase font-bold text-emerald-300">BLOOD GROUP</p>
+                <p id="idCardBlood" class="text-lg font-extrabold text-white">B+</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[9px] uppercase font-bold text-emerald-300">LOCATION</p>
+                <p id="idCardLocation" class="text-xs font-semibold text-white">Dhaka</p>
+              </div>
+              <div id="qrCodeContainer" class="bg-white p-1 rounded">
+                <img id="qrCodeImg" src="" class="w-12 h-12">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 col-span-2 flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="font-bold text-slate-700 text-sm">Impact Hours & Stats</h4>
+              <span class="text-xs text-slate-400 font-medium">Lifetime History</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div class="bg-emerald-50 p-4 rounded-xl">
+                <p class="text-2xl font-extrabold text-emerald-800">0</p>
+                <p class="text-xs text-emerald-700 font-semibold">Events Done</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-xl">
+                <p class="text-2xl font-extrabold text-blue-800">0</p>
+                <p class="text-xs text-blue-700 font-semibold">On-Time</p>
+              </div>
+              <div class="bg-amber-50 p-4 rounded-xl">
+                <p class="text-2xl font-extrabold text-amber-800">0</p>
+                <p class="text-xs text-amber-700 font-semibold">Late/Missed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVENTS TAB -->
+      <div id="eventsTab" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Events Hub</h2>
+        <div id="allEventsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- MY PROFILE TAB -->
+      <div id="profileTab" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Profile Settings</h2>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+          <div>
+            <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">Account Identity</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Current Email</label>
+                <input type="text" id="profEmail" disabled class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 font-medium">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Upazila / Location</label>
+                <select id="profUpazila" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                  <option value="DSCC">Dhaka South City Corporation</option>
+                  <option value="Keraniganj">Keraniganj</option>
+                  <option value="Dohar">Dohar</option>
+                  <option value="Nawabganj">Nawabganj</option>
+                  <option value="District">District Board</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t pt-4">
+            <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">Personal Information</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
+                <input type="text" id="profName" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
+                <input type="tel" id="profPhone" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              </div>
+            </div>
+          </div>
+          <button onclick="saveProfile()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl transition text-sm">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- MANAGE EVENTS (HR/PS ONLY) -->
+      <div id="manageEventsTab" class="tab-content hidden space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Create & Manage Events</h2>
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+          <h3 class="font-bold text-slate-700 text-sm">Create New Geo-Event</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Event Title *</label>
+              <input type="text" id="evtTitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Location Venue *</label>
+              <input type="text" id="evtLocation" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Date *</label>
+              <input type="date" id="evtDate" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Start Time *</label>
+              <input type="time" id="evtTime" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Target Upazila Scope</label>
+              <select id="evtScope" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="ALL">All Hubs (District)</option>
+                <option value="DSCC">DSCC</option>
+                <option value="Keraniganj">Keraniganj</option>
+                <option value="Dohar">Dohar</option>
+                <option value="Nawabganj">Nawabganj</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Center Point Person Email *</label>
+              <input type="email" id="evtCenterEmail" placeholder="HR/Person at Venue" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Allowed Radius (Meters)</label>
+              <input type="number" id="evtRadius" value="50" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+
+            <div class="col-span-2 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+              <label class="block text-xs font-bold text-emerald-900 mb-1">Google Form Response Sheet Link (View Only) *</label>
+              <input type="text" id="evtFormSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <p class="text-[10px] text-emerald-700 mt-1">Paste the Google Form Response Sheet Link (Anyone with the link can view).</p>
+            </div>
+
+          </div>
+          <button onclick="createNewEvent()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-sm transition">Publish Event</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
   <script>
-    // -----------------------------------------------------------
-    // YOUR APPS SCRIPT WEB APP URL LINKED HERE
-    // -----------------------------------------------------------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBczq-XndpBFaTxKBKIolpIQ9HjM_uqHbfW4zU39JhTQsJSGIsnBFXzu0ryU7MPTn6PA/exec";
-
     let currentUser = null;
 
-    // Helper: Show Alert Message
     function showAlert(msg, isSuccess = true) {
       const box = document.getElementById('alertBox');
-      box.className = `max-w-xl mx-auto mt-4 px-4 py-3 rounded text-sm text-center font-medium shadow-md ${isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+      box.className = `mb-6 p-4 rounded-xl text-sm font-semibold shadow-sm ${isSuccess ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
       box.innerText = msg;
       box.classList.remove('hidden');
       setTimeout(() => box.classList.add('hidden'), 5000);
     }
 
-    // Helper: Show Section
-    function showSection(sectionId) {
-      document.getElementById('loginSection').classList.add('hidden');
-      document.getElementById('forgotPasswordSection').classList.add('hidden');
-      document.getElementById('dashboardSection').classList.add('hidden');
-      document.getElementById(sectionId).classList.remove('hidden');
+    function toggleAuth(type) {
+      if (type === 'signup') {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('signupForm').classList.remove('hidden');
+      } else {
+        document.getElementById('signupForm').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+      }
     }
 
-    // Tab Switcher
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-red-600', 'text-white');
-        btn.classList.add('bg-gray-100', 'text-gray-700');
-      });
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
       document.getElementById(tabId).classList.remove('hidden');
     }
 
-    // LOGIN ACTION
+    async function handleSignUp() {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const phone = document.getElementById('signupPhone').value.trim();
+      const upazila = document.getElementById('signupUpazila').value;
+      const designation = document.getElementById('signupDesignation').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+
+      if (!name || !email || !phone || !password) return showAlert('Fill required fields!', false);
+
+      showAlert('Registering account...');
+      try {
+        const url = `${SCRIPT_URL}?action=signUpUser&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&upazila=${encodeURIComponent(upazila)}&designation=${encodeURIComponent(designation)}&password=${encodeURIComponent(password)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        showAlert(data.message, data.success);
+        if (data.success) toggleAuth('login');
+      } catch (err) {
+        toggleAuth('login');
+      }
+    }
+
     async function handleLogin() {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
 
-      if (!email || !password) return showAlert('ইমেইল ও পাসওয়ার্ড প্রদান করুন', false);
+      if (!email || !password) return showAlert('Enter email and password!', false);
 
-      showAlert('লগইন ভ্যালিডেশন হচ্ছে...', true);
-
+      showAlert('Verifying credentials...');
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=validateUserLogin&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+        const url = `${SCRIPT_URL}?action=loginUser&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+        const res = await fetch(url);
         const data = await res.json();
 
         if (data.success) {
-          currentUser = data.permissions;
-          setupDashboard();
+          currentUser = data.user;
+          setupUserSession();
         } else {
-          showAlert(data.message || 'ভুল তথ্য প্রদান করেছেন', false);
+          showAlert(data.message, false);
         }
       } catch (err) {
-        showAlert('সার্ভারের সাথে কানেক্ট করা যাচ্ছে না!', false);
+        showAlert('Network error.', false);
       }
     }
 
-    // DASHBOARD SETUP ACCORDING TO ROLE
-    function setupDashboard() {
-      showSection('dashboardSection');
-      document.getElementById('userInfoHeader').classList.remove('hidden');
-      document.getElementById('userRoleBadge').innerText = currentUser.role;
+    function setupUserSession() {
+      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      document.getElementById('sidebar').classList.remove('hidden');
 
-      // Master Access Option only for President and VP
-      if (currentUser.isDistrictPresidentOrVP) {
-        document.getElementById('tabMasterAccess').classList.remove('hidden');
-        loadMasterPermissions();
+      document.getElementById('sidebarUserName').innerText = currentUser.name;
+      document.getElementById('sidebarUserRole').innerText = currentUser.designation;
+      document.getElementById('sidebarUserImg').src = currentUser.photoUrl || "https://via.placeholder.com/40";
+      document.getElementById('welcomeText').innerText = `Hello, ${currentUser.name}! 👋`;
+
+      document.getElementById('idCardName').innerText = currentUser.name;
+      document.getElementById('idCardRole').innerText = currentUser.designation;
+      document.getElementById('idCardVbdId').innerText = `VBD ID: ${currentUser.vbdId}`;
+      document.getElementById('idCardBlood').innerText = currentUser.bloodGroup || 'N/A';
+      document.getElementById('idCardLocation').innerText = currentUser.upazila;
+      document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(currentUser.vbdId)}`;
+
+      document.getElementById('profEmail').value = currentUser.email;
+      document.getElementById('profName').value = currentUser.name;
+      document.getElementById('profPhone').value = currentUser.phone;
+
+      if (currentUser.isHRorPS || currentUser.isBoardMember) {
+        document.getElementById('managementNav').classList.remove('hidden');
       }
 
-      // Event Creation Button
-      if (currentUser.canCreateEvent) {
-        document.getElementById('btnCreateEvent').classList.remove('hidden');
-      }
+      loadEvents();
     }
 
-    // LOAD MASTER PERMISSIONS DATA
-    async function loadMasterPermissions() {
+    async function loadEvents() {
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=getMasterPermissionsData&email=${encodeURIComponent(currentUser.email)}`);
-        const result = await res.json();
-
-        if (result.success && result.data) {
-          const d = result.data.district;
-          for (let p in d) {
-            let input = document.getElementById(`m_${p}`);
-            if (input) input.value = d[p];
-          }
-
-          const u = result.data.upazilas;
-          for (let upz in u) {
-            for (let p in u[upz]) {
-              let input = document.getElementById(`m_${upz}_${p}`);
-              if (input) input.value = u[upz][p];
-            }
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // SAVE MASTER PERMISSIONS DATA
-    async function saveMasterPermissions() {
-      const updatedData = {
-        district: {
-          DISTRICT_PRESIDENT: document.getElementById('m_DISTRICT_PRESIDENT').value,
-          DISTRICT_VP: document.getElementById('m_DISTRICT_VP').value,
-          DISTRICT_GS: document.getElementById('m_DISTRICT_GS').value,
-          DISTRICT_TREASURER: document.getElementById('m_DISTRICT_TREASURER').value,
-          DISTRICT_HRO: document.getElementById('m_DISTRICT_HRO').value,
-          DISTRICT_PO: document.getElementById('m_DISTRICT_PO').value
-        },
-        upazilas: {
-          "DSCC": {
-            UPAZILA_PRESIDENT: document.getElementById('m_DSCC_UPAZILA_PRESIDENT').value,
-            UPAZILA_GS: document.getElementById('m_DSCC_UPAZILA_GS').value,
-            UPAZILA_HRS: document.getElementById('m_DSCC_UPAZILA_HRS').value,
-            UPAZILA_PROJECT_SEC: document.getElementById('m_DSCC_UPAZILA_PROJECT_SEC').value
-          },
-          "Keraniganj": {
-            UPAZILA_PRESIDENT: document.getElementById('m_Keraniganj_UPAZILA_PRESIDENT').value,
-            UPAZILA_GS: document.getElementById('m_Keraniganj_UPAZILA_GS').value,
-            UPAZILA_HRS: document.getElementById('m_Keraniganj_UPAZILA_HRS').value,
-            UPAZILA_PROJECT_SEC: document.getElementById('m_Keraniganj_UPAZILA_PROJECT_SEC').value
-          }
-        }
-      };
-
-      showAlert('পারমিশন আপডেট সেভ হচ্ছে...', true);
-
-      try {
-        const res = await fetch(`${SCRIPT_URL}?action=updateMasterPermissions&email=${encodeURIComponent(currentUser.email)}`, {
-          method: 'POST',
-          body: JSON.stringify(updatedData)
-        });
+        const res = await fetch(`${SCRIPT_URL}?action=getEvents`);
         const data = await res.json();
-        showAlert(data.message, data.success);
-      } catch (err) {
-        showAlert('আপডেট করতে সমস্যা হয়েছে!', false);
+        if (data.events) renderEvents(data.events);
+      } catch (err) {}
+    }
+
+    function renderEvents(events) {
+      const container = document.getElementById('allEventsList');
+      container.innerHTML = '';
+
+      events.forEach(evt => {
+        const div = document.createElement('div');
+        div.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between";
+        div.innerHTML = `
+          <div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">${evt.scope}</span>
+            <h4 class="font-bold text-slate-800 text-base mt-2">${evt.title}</h4>
+            <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-rose-500"></i> ${evt.location}</p>
+            <p class="text-xs text-slate-500"><i class="fa-solid fa-clock text-amber-500"></i> ${evt.date} at ${evt.startTime}</p>
+          </div>
+          <button onclick="checkIn('${evt.id}')" class="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-lg text-xs transition">Check In Geo-Attendance</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // PASSING BOTH EMAIL & PHONE TO BACKEND FOR MATCHING
+    async function checkIn(eventId) {
+      showAlert('Verifying Dual Registration (Email/Phone) & Location...');
+      const url = `${SCRIPT_URL}?action=markAttendance&eventId=${eventId}&email=${encodeURIComponent(currentUser.email)}&phone=${encodeURIComponent(currentUser.phone)}&name=${encodeURIComponent(currentUser.name)}&status=Present&distance=0`;
+      const res = await fetch(url);
+      const data = await res.json();
+      showAlert(data.message, data.success);
+    }
+
+    async function createNewEvent() {
+      const title = document.getElementById('evtTitle').value;
+      const location = document.getElementById('evtLocation').value;
+      const date = document.getElementById('evtDate').value;
+      const startTime = document.getElementById('evtTime').value;
+      const scope = document.getElementById('evtScope').value;
+      const centerEmail = document.getElementById('evtCenterEmail').value;
+      const radius = document.getElementById('evtRadius').value;
+      const formSheetUrl = document.getElementById('evtFormSheetUrl').value;
+
+      if (!title || !location || !date || !startTime || !centerEmail || !formSheetUrl) {
+        return showAlert('Fill all required fields including Google Form Sheet URL!', false);
       }
-    }
 
-    // REQUEST OTP
-    async function requestOTP() {
-      const email = document.getElementById('resetEmail').value.trim();
-      if (!email) return showAlert('ইমেইল অ্যাড্রেস লিখুন', false);
-
-      showAlert('এইচআর ইমেইল থেকে ওটিপি পাঠানো হচ্ছে...', true);
-      const res = await fetch(`${SCRIPT_URL}?action=sendPasswordResetOTP&email=${encodeURIComponent(email)}`);
+      const url = `${SCRIPT_URL}?action=createEvent&title=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}&date=${date}&startTime=${startTime}&upazilaScope=${scope}&centerEmail=${encodeURIComponent(centerEmail)}&radius=${radius}&formSheetUrl=${encodeURIComponent(formSheetUrl)}&createdBy=${encodeURIComponent(currentUser.email)}`;
+      const res = await fetch(url);
       const data = await res.json();
       showAlert(data.message, data.success);
+      loadEvents();
     }
 
-    // SUBMIT RESET PASSWORD
-    async function submitResetPassword() {
-      const email = document.getElementById('resetEmail').value.trim();
-      const otp = document.getElementById('otpCode').value.trim();
-      const pass = document.getElementById('newPassword').value.trim();
-
-      if (!email || !otp || !pass) return showAlert('সব তথ্য দিন', false);
-
-      const res = await fetch(`${SCRIPT_URL}?action=verifyOTPAndResetPassword&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&password=${encodeURIComponent(pass)}`);
-      const data = await res.json();
-      showAlert(data.message, data.success);
-      if (data.success) showSection('loginSection');
-    }
-
-    // LOGOUT
-    function logout() {
-      currentUser = null;
-      document.getElementById('userInfoHeader').classList.add('hidden');
-      showSection('loginSection');
-    }
+    function logout() { location.reload(); }
   </script>
 </body>
 </html>
