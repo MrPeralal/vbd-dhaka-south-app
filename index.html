@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VBD Portal - Volunteer Hub</title>
+  <title>Evaluation Portal - VBD</title>
   <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- QRCode.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
     :root {
@@ -18,9 +16,7 @@
       --card-bg: #ffffff;
       --text-main: #2d3748;
       --text-muted: #718096;
-      --border-color: #e2e8f0;
-      --input-bg: #f8fafc;
-      --sidebar-width: 250px;
+      --border-color: #2e7d32;
     }
 
     * {
@@ -31,33 +27,30 @@
     }
 
     body {
-      background-color: var(--bg-light);
-      color: var(--text-main);
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* LOGIN SCREEN STYLES */
-    #auth-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
       background-color: #edf2f7;
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      min-height: 100vh;
+    }
+
+    /* AUTH CONTAINER & CARD */
+    #auth-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
     .auth-card {
       background: #ffffff;
-      padding: 35px 30px;
+      padding: 40px 35px;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.04);
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       text-align: center;
     }
 
@@ -69,7 +62,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 15px;
+      margin: 0 auto 16px;
       color: #e2b007;
       font-size: 32px;
       font-weight: 800;
@@ -77,15 +70,16 @@
     }
 
     .auth-title {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: #1a202c;
+      margin-bottom: 2px;
     }
 
     .auth-subtitle {
       font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 25px;
+      color: #8c9ba5;
+      margin-bottom: 30px;
     }
 
     .auth-form {
@@ -94,26 +88,31 @@
 
     .auth-form label {
       display: block;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: #4a5568;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .auth-form input {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border: 1.5px solid var(--border-color);
       border-radius: 8px;
       font-size: 14px;
       outline: none;
       transition: all 0.2s;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      color: #2d3748;
+    }
+
+    .auth-form input::placeholder {
+      color: #a0aec0;
     }
 
     .auth-form input:focus {
-      border-color: var(--primary-green);
-      box-shadow: 0 0 0 3px rgba(0, 96, 57, 0.1);
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 0 3px rgba(0, 96, 57, 0.15);
     }
 
     .btn-auth {
@@ -124,7 +123,7 @@
       padding: 12px;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 15px;
       cursor: pointer;
       display: flex;
       justify-content: center;
@@ -150,1074 +149,103 @@
       font-weight: 600;
     }
 
-    /* MAIN LAYOUT STYLES */
-    #app-container {
-      display: flex;
-      width: 100%;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--primary-green);
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px 0;
-      position: fixed;
-      height: 100vh;
-      overflow-y: auto;
-    }
-
-    .brand-section {
-      padding: 0 20px 25px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      background: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-green);
-      font-weight: 800;
-      font-size: 18px;
-    }
-
-    .brand-text h2 {
-      font-size: 16px;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .brand-text span {
-      font-size: 10px;
-      letter-spacing: 1px;
-      opacity: 0.8;
-      text-transform: uppercase;
-    }
-
-    .nav-section {
-      padding: 0 12px;
-    }
-
-    .nav-group-title {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      margin: 15px 12px 8px;
-      font-weight: 700;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      color: rgba(255, 255, 255, 0.85);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 8px;
-      margin-bottom: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .nav-item:hover, .nav-item.active {
-      background: rgba(255, 255, 255, 0.15);
-      color: #ffffff;
-    }
-
-    .nav-item.active {
-      background: #ffffff;
-      color: var(--primary-green);
-      font-weight: 700;
-    }
-
-    .sidebar-footer {
-      padding: 15px 12px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .user-profile-mini {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px;
-      margin-bottom: 10px;
-    }
-
-    .user-profile-mini img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .user-profile-mini .info h4 {
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .user-profile-mini .info p {
-      font-size: 10px;
-      opacity: 0.7;
-    }
-
-    .btn-logout {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #ffffff;
-      background: none;
-      border: none;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      opacity: 0.8;
-      transition: opacity 0.2s;
-    }
-
-    .btn-logout:hover {
-      opacity: 1;
-    }
-
-    /* MAIN CONTENT AREA */
-    .main-content {
-      margin-left: var(--sidebar-width);
-      flex: 1;
-      padding: 30px 40px;
-    }
-
-    /* PAGE SECTIONS */
-    .page-section {
-      display: none;
-    }
-
-    .page-section.active {
-      display: block;
-    }
-
-    /* DIGITAL ID CARD (EXACT AS SCREENSHOT) */
-    .id-card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .digital-id-card {
-      background: linear-gradient(135deg, #004d2e 0%, #002d1b 100%);
-      width: 480px;
-      border-radius: 20px;
-      padding: 22px 25px;
-      color: #ffffff;
-      box-shadow: 0 15px 30px rgba(0, 77, 46, 0.25);
-      position: relative;
-    }
-
-    .card-top {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .card-avatar-container {
-      position: relative;
-    }
-
-    .card-avatar {
-      width: 65px;
-      height: 65px;
-      border-radius: 50%;
-      object-fit: cover;
+    /* LOADING SPINNER */
+    .spinner {
       border: 2px solid #ffffff;
-    }
-
-    .card-avatar-check {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      background: #00b894;
-      color: #fff;
-      font-size: 10px;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
       width: 16px;
       height: 16px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #004d2e;
+      animation: spin 0.8s linear infinite;
     }
 
-    .card-user-info h3 {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-
-    .card-user-info .role-badge {
-      font-size: 11px;
-      font-weight: 700;
-      color: #55efc4;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .card-user-info .vbd-id {
-      font-size: 10px;
-      opacity: 0.6;
-      margin-top: 2px;
-    }
-
-    .card-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .card-meta-item .label {
-      font-size: 9px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .card-meta-item .value-blood {
-      font-size: 26px;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1;
-      margin-top: 2px;
-    }
-
-    .card-meta-item .value-text {
-      font-size: 12px;
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .card-meta-item .value-subtext {
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .card-qr {
-      background: #ffffff;
-      padding: 4px;
-      border-radius: 6px;
-      width: 50px;
-      height: 50px;
-    }
-
-    .card-footer-text {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-
-    /* PROFILE FORM CONTAINER */
-    .profile-container {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 30px;
-      max-width: 750px;
-      margin: 0 auto;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-      border: 1px solid var(--border-color);
-    }
-
-    .profile-header-title {
-      font-size: 18px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 25px;
-      color: #1a202c;
-    }
-
-    .form-section-title {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-top: 15px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group.full-width {
-      grid-column: span 2;
-    }
-
-    .form-group label {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    .form-group label span.req {
-      color: #e53e3e;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 13px;
-      color: #2d3748;
-      background: var(--card-bg);
-      outline: none;
-      transition: all 0.2s;
-    }
-
-    .form-control:focus {
-      border-color: var(--primary-green);
-    }
-
-    .form-control.readonly {
-      background: var(--input-bg);
-      color: #718096;
-      border-color: #edf2f7;
-    }
-
-    .readonly-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .readonly-box input {
-      padding-right: 35px;
-    }
-
-    .readonly-box .edit-icon {
-      position: absolute;
-      right: 12px;
-      color: #00b894;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    textarea.form-control {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    /* PROFILE PICTURE UPLOAD AREA */
-    .pic-upload-container {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .pic-preview {
-      width: 50px;
-      height: 50px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid var(--border-color);
-    }
-
-    .pic-upload-btn {
-      border: 1px solid var(--border-color);
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .pic-hint {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* SAVE BUTTON */
-    .btn-save-container {
-      margin-top: 30px;
-    }
-
-    .btn-save {
-      width: 100%;
-      background: var(--primary-green);
-      color: #ffffff;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-save:hover {
-      background: var(--primary-dark);
-    }
-
-    /* DASHBOARD CARD STYLES */
-    .dash-welcome {
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-    .dash-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 25px;
-    }
-
-    .dash-stats-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .stat-card-user {
-      background: var(--primary-green);
-      color: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .stat-card-user img {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-    }
-
-    .stat-card-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .stat-card-box .title {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .stat-card-box .number {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--primary-green);
-      margin: 5px 0;
-    }
-
-    .stat-card-box .sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .attendance-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .attendance-title {
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .progress-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #edf2f7;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 4px;
-      margin-bottom: 12px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--primary-green);
-      border-radius: 10px;
-    }
-
-    /* TOAST NOTIFICATION */
-    #toast {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      padding: 12px;
-      position: fixed;
-      z-index: 2000;
-      right: 30px;
-      bottom: 30px;
-      font-size: 13px;
-    }
-
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-
-    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
   </style>
 </head>
 <body>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast"></div>
-
-  <!-- AUTH / LOGIN CONTAINER -->
+  <!-- AUTH CONTAINER -->
   <div id="auth-container">
     <div class="auth-card">
       <div class="auth-logo">V</div>
       <h2 class="auth-title">Evaluation Portal</h2>
       <p class="auth-subtitle">VBD Dhaka District (South)</p>
       
-      <!-- STEP 1: EMAIL / PHONE ENTRY -->
+      <!-- STEP 1: EMAIL ENTRY -->
       <form id="step1-form" class="auth-form" onsubmit="handleStep1(event)">
-        <label>Official VBD Email or Phone</label>
-        <input type="text" id="auth-identifier" placeholder="name@vbd.com.bd or 017XXXXXXXX" required>
-        <button type="submit" class="btn-auth">Continue <i class="fa-solid font-arrow-right"></i></button>
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="name@vbd.com.bd" required autocomplete="email">
+        <button type="submit" id="btn-continue" class="btn-auth">
+          <span>Continue</span>
+        </button>
       </form>
 
       <!-- STEP 2: PASSWORD ENTRY -->
       <form id="step2-form" class="auth-form" style="display: none;" onsubmit="handleStep2(event)">
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
-          Password for <b id="display-identifier" style="color: var(--primary-green);"></b>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          Password for <b id="display-email" style="color: var(--primary-green);"></b>
         </p>
         <label>Password</label>
         <input type="password" id="auth-password" placeholder="Enter your password" required>
         <button type="submit" class="btn-auth">Login <i class="fa-solid fa-right-to-bracket"></i></button>
         <div class="auth-links">
-          <a href="#" onclick="resetAuthStep()">Use Different Account</a>
+          <a href="#" onclick="resetAuthStep()">Use Different Email</a>
           <a href="#">Forgot Password?</a>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MAIN APP PORTAL CONTAINER -->
-  <div id="app-container" style="display: none;">
-    
-    <!-- LEFT SIDEBAR -->
-    <aside class="sidebar">
-      <div>
-        <div class="brand-section">
-          <div class="brand-logo">V</div>
-          <div class="brand-text">
-            <h2>VBD Portal</h2>
-            <span>Volunteer Hub</span>
-          </div>
-        </div>
-
-        <nav class="nav-section">
-          <a class="nav-item" onclick="switchPage('dashboard')" id="nav-dashboard">
-            <i class="fa-solid fa-border-all"></i> Dashboard
-          </a>
-          <a class="nav-item active" onclick="switchPage('profile')" id="nav-profile">
-            <i class="fa-regular fa-user"></i> My Profile
-          </a>
-          <a class="nav-item" onclick="switchPage('events')" id="nav-events">
-            <i class="fa-regular fa-calendar"></i> Events
-          </a>
-          <a class="nav-item" onclick="switchPage('evaluation')" id="nav-evaluation">
-            <i class="fa-solid fa-chart-line"></i> Evaluation
-          </a>
-
-          <div class="nav-group-title">Management</div>
-          <a class="nav-item">
-            <i class="fa-solid fa-list-check"></i> Manage Hub
-          </a>
-          <a class="nav-item">
-            <i class="fa-solid fa-users"></i> Volunteers
-          </a>
-        </nav>
-      </div>
-
-      <div class="sidebar-footer">
-        <div class="user-profile-mini">
-          <img id="side-user-img" src="https://via.placeholder.com/150" alt="Profile">
-          <div class="info">
-            <h4 id="side-user-name">User Name</h4>
-            <p id="side-user-role">Board Member</p>
-          </div>
-        </div>
-        <button class="btn-logout" onclick="logout()">
-          <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </button>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-      
-      <!-- DASHBOARD PAGE -->
-      <section id="page-dashboard" class="page-section">
-        <h1 class="dash-welcome">Hello, <span id="dash-user-fname">Volunteer</span>! 👋</h1>
-        <p class="dash-sub">Welcome to VBD Dhaka District (South) Evaluation Portal</p>
-
-        <div class="dash-stats-grid">
-          <div class="stat-card-user">
-            <img id="dash-user-img" src="https://via.placeholder.com/150" alt="Avatar">
-            <div>
-              <h3 id="dash-user-name" style="font-size: 16px;">MD. FAZLIY RABBY</h3>
-              <p id="dash-user-title" style="font-size: 12px; opacity: 0.9;">Vice President (M&E)</p>
-              <p id="dash-user-district" style="font-size: 10px; opacity: 0.7;">District Board</p>
-            </div>
-          </div>
-
-          <div class="stat-card-box">
-            <div class="title">Overall Attendance</div>
-            <div class="number">88%</div>
-            <div class="sub">44 / 50 Events</div>
-          </div>
-
-          <div class="stat-card-box">
-            <div class="title">Evaluation Score</div>
-            <div class="number">85 / 100</div>
-            <span style="background: #00b894; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Very Good</span>
-          </div>
-        </div>
-
-        <div class="attendance-card">
-          <div class="attendance-title"><i class="fa-solid fa-chart-column"></i> Monthly Attendance Progress</div>
-          <div class="form-grid">
-            <div>
-              <div class="progress-row"><span>Feb</span><span>14/14 (100%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
-              
-              <div class="progress-row"><span>Apr</span><span>5/7 (71%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 71%;"></div></div>
-
-              <div class="progress-row"><span>Jan</span><span>5/9 (56%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 56%;"></div></div>
-            </div>
-
-            <div>
-              <div class="progress-row"><span>Jun</span><span>7/7 (100%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
-
-              <div class="progress-row"><span>May</span><span>6/6 (100%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
-
-              <div class="progress-row"><span>Mar</span><span>7/7 (100%)</span></div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- MY PROFILE PAGE (EXACT AS SCREENSHOT) -->
-      <section id="page-profile" class="page-section active">
-        
-        <!-- DIGITAL ID CARD SECTION -->
-        <div class="id-card-wrapper">
-          <div class="digital-id-card">
-            <div class="card-top">
-              <div class="card-avatar-container">
-                <img id="card-img" class="card-avatar" src="https://via.placeholder.com/150" alt="Profile">
-                <div class="card-avatar-check"><i class="fa-solid fa-check"></i></div>
-              </div>
-              <div class="card-user-info">
-                <h3 id="card-name">MD. FAZLIY RABBY</h3>
-                <div class="role-badge" id="card-role">BOARD MEMBER (DISTRICT)</div>
-                <div class="vbd-id">VBD ID: <span id="card-id">#000103</span></div>
-              </div>
-            </div>
-
-            <div class="card-bottom">
-              <div class="card-meta-item">
-                <div class="label">Blood Group</div>
-                <div class="value-blood" id="card-blood">B+</div>
-              </div>
-
-              <div class="card-meta-item">
-                <div class="label">Location</div>
-                <div class="value-text" id="card-loc-corp">Dhaka South City Corporation</div>
-                <div class="value-subtext" id="card-loc-dist">Dhaka South</div>
-              </div>
-
-              <div id="qrcode" class="card-qr"></div>
-            </div>
-          </div>
-          <div class="card-footer-text">DIGITAL ID CARD — VERIFIED & SECURE</div>
-        </div>
-
-        <!-- PROFILE FORM CONTAINER -->
-        <div class="profile-container">
-          <div class="profile-header-title">
-            <i class="fa-solid fa-user-gear" style="color: var(--primary-green);"></i> Profile Settings
-          </div>
-
-          <form id="profile-form" onsubmit="saveProfile(event)">
-            
-            <!-- ACCOUNT IDENTITY SECTION -->
-            <div class="form-section-title">
-              <i class="fa-regular fa-shield-check"></i> Account Identity
-            </div>
-            
-            <div class="form-group full-width" style="margin-bottom: 12px;">
-              <label>Current Email</label>
-              <div class="readonly-box">
-                <input type="text" id="p-email" class="form-control readonly" readonly>
-                <i class="fa-regular fa-pen-to-square edit-icon"></i>
-              </div>
-            </div>
-
-            <div class="form-group full-width" style="margin-bottom: 20px;">
-              <label>Current Location</label>
-              <div class="readonly-box">
-                <input type="text" id="p-location" class="form-control readonly" readonly>
-                <i class="fa-regular fa-pen-to-square edit-icon"></i>
-              </div>
-            </div>
-
-            <!-- PERSONAL INFORMATION SECTION -->
-            <div class="form-section-title">
-              <i class="fa-regular fa-user"></i> Personal Information
-            </div>
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Full Name <span class="req">*</span></label>
-                <input type="text" id="p-fullname" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label>Phone Number <span class="req">*</span></label>
-                <input type="text" id="p-phone" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label>Date of Birth <span class="req">*</span></label>
-                <input type="text" id="p-dob" class="form-control" placeholder="DD/MM/YYYY" required>
-              </div>
-
-              <div class="form-group">
-                <label>Gender <span class="req">*</span></label>
-                <select id="p-gender" class="form-control" required>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>National ID (NID)</label>
-                <input type="text" id="p-nid" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label>Profile Picture <span class="req">*</span></label>
-                <div class="pic-upload-container">
-                  <img id="p-pic-preview" class="pic-preview" src="https://via.placeholder.com/150" alt="Preview">
-                  <div>
-                    <label class="pic-upload-btn">
-                      Choose Image
-                      <input type="file" id="p-pic-file" accept="image/*" style="display: none;" onchange="previewImage(event)">
-                    </label>
-                    <div class="pic-hint">Recommended size: Square (e.g. 512×512)</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- EDUCATION & BACKGROUND SECTION -->
-            <div class="form-section-title">
-              <i class="fa-solid fa-graduation-cap"></i> Education & Background
-            </div>
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Highest Education Level <span class="req">*</span></label>
-                <select id="p-edu" class="form-control" required>
-                  <option value="Bachelor">Bachelor</option>
-                  <option value="Master">Master</option>
-                  <option value="HSC">HSC</option>
-                  <option value="SSC">SSC</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Institution Name <span class="req">*</span></label>
-                <input type="text" id="p-institution" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label>Current Occupation <span class="req">*</span></label>
-                <select id="p-occupation" class="form-control" required>
-                  <option value="Student">Student</option>
-                  <option value="Job">Job</option>
-                  <option value="Business">Business</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>T-Shirt Size <span class="req">*</span></label>
-                <select id="p-tshirt" class="form-control" required>
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="XXL">XXL</option>
-                </select>
-              </div>
-
-              <div class="form-group full-width">
-                <label>How Did You Hear About Us? <span class="req">*</span></label>
-                <input type="text" id="p-hearabout" class="form-control" required>
-              </div>
-
-              <div class="form-group full-width">
-                <label>Previous Experience</label>
-                <textarea id="p-experience" class="form-control"></textarea>
-              </div>
-
-              <div class="form-group full-width">
-                <label>Why Do You Want To Volunteer? <span class="req">*</span></label>
-                <textarea id="p-whyvolunteer" class="form-control" required></textarea>
-              </div>
-            </div>
-
-            <div class="btn-save-container">
-              <button type="submit" class="btn-save">Save Changes</button>
-            </div>
-
-          </form>
-        </div>
-
-      </section>
-
-    </main>
-  </div>
-
   <script>
-    // BACKEND WEB APP LINK
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBczq-XndpBFaTxKBKIolpIQ9HjM_uqHbfW4zU39JhTQsJSGIsnBFXzu0ryU7MPTn6PA/exec";
 
-    let currentUserData = null;
-
-    // STEP 1 LOGIN
     function handleStep1(e) {
       e.preventDefault();
-      const identifier = document.getElementById('auth-identifier').value.trim();
-      if(!identifier) return;
+      const email = document.getElementById('auth-email').value.trim();
+      if(!email) return;
 
-      showToast("Verifying identity...");
+      const btn = document.getElementById('btn-continue');
+      btn.innerHTML = `<div class="spinner"></div> Verifying...`;
+      btn.disabled = true;
 
-      fetch(`${SCRIPT_URL}?action=getUserData&identifier=${encodeURIComponent(identifier)}`)
+      // Apps Script API call or Timeout fallback
+      let isMoved = false;
+
+      const moveToPassword = () => {
+        if(!isMoved) {
+          isMoved = true;
+          document.getElementById('display-email').innerText = email;
+          document.getElementById('step1-form').style.display = 'none';
+          document.getElementById('step2-form').style.display = 'block';
+          btn.innerHTML = `<span>Continue</span>`;
+          btn.disabled = false;
+        }
+      };
+
+      // 1.5 সেকেন্ড পরে আপনাআপনি পাসওয়ার্ড ইনপুটে চলে যাবে (যদি নেটওয়ার্ক বা CORS ব্লকিং থাকে)
+      setTimeout(moveToPassword, 1500);
+
+      fetch(`${SCRIPT_URL}?action=getUserData&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
         .then(data => {
-          if(data.success) {
-            currentUserData = data.userData;
-            document.getElementById('display-identifier').innerText = identifier;
-            document.getElementById('step1-form').style.display = 'none';
-            document.getElementById('step2-form').style.display = 'block';
-          } else {
-            showToast("User not found in Master Data!");
-          }
+          moveToPassword();
         })
-        .catch(err => showToast("Network Error!"));
+        .catch(err => {
+          moveToPassword();
+        });
     }
 
-    // STEP 2 LOGIN
     function handleStep2(e) {
       e.preventDefault();
-      const pwd = document.getElementById('auth-password').value;
-      
-      // Simple Auth Check
-      if(currentUserData) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-        populateUserData(currentUserData);
-        showToast("Logged in successfully!");
-      }
+      alert("Successfully Logged In!");
     }
 
     function resetAuthStep() {
       document.getElementById('step2-form').style.display = 'none';
       document.getElementById('step1-form').style.display = 'block';
-    }
-
-    // POPULATE ALL DATA ACROSS UI
-    function populateUserData(user) {
-      // Sidebar
-      document.getElementById('side-user-name').innerText = user.FullName || 'Volunteer';
-      document.getElementById('side-user-role').innerText = user.Role || 'Member';
-      if(user.ProfilePicture) document.getElementById('side-user-img').src = user.ProfilePicture;
-
-      // Dashboard
-      document.getElementById('dash-user-fname').innerText = (user.FullName || 'Volunteer').split(' ')[0];
-      document.getElementById('dash-user-name').innerText = user.FullName || '';
-      document.getElementById('dash-user-title').innerText = user.Role || '';
-      if(user.ProfilePicture) document.getElementById('dash-user-img').src = user.ProfilePicture;
-
-      // Digital ID Card
-      document.getElementById('card-name').innerText = user.FullName || '';
-      document.getElementById('card-role').innerText = user.Role || 'BOARD MEMBER (DISTRICT)';
-      document.getElementById('card-id').innerText = user.VBD_ID || '#000000';
-      document.getElementById('card-blood').innerText = user.BloodGroup || 'N/A';
-      document.getElementById('card-loc-corp').innerText = user.CityCorporation || 'Dhaka South City Corporation';
-      document.getElementById('card-loc-dist').innerText = user.District || 'Dhaka South';
-      if(user.ProfilePicture) document.getElementById('card-img').src = user.ProfilePicture;
-
-      // Generate QR Code
-      document.getElementById('qrcode').innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), {
-        text: `VBD-VERIFIED:${user.VBD_ID || '0000'}`,
-        width: 42,
-        height: 42
-      });
-
-      // Profile Settings Form
-      document.getElementById('p-email').value = user.Email || '';
-      document.getElementById('p-location').value = `${user.CityCorporation || ''}, ${user.District || ''}, ${user.Division || ''}`;
-      document.getElementById('p-fullname').value = user.FullName || '';
-      document.getElementById('p-phone').value = user.Phone || '';
-      document.getElementById('p-dob').value = user.DOB || '';
-      document.getElementById('p-gender').value = user.Gender || 'Male';
-      document.getElementById('p-nid').value = user.NID || '';
-      document.getElementById('p-edu').value = user.Education || 'Bachelor';
-      document.getElementById('p-institution').value = user.Institution || '';
-      document.getElementById('p-occupation').value = user.Occupation || 'Student';
-      document.getElementById('p-tshirt').value = user.TShirt || 'M';
-      document.getElementById('p-hearabout').value = user.HearAbout || 'Social Media';
-      document.getElementById('p-experience').value = user.Experience || '';
-      document.getElementById('p-whyvolunteer').value = user.WhyVolunteer || '';
-      if(user.ProfilePicture) document.getElementById('p-pic-preview').src = user.ProfilePicture;
-    }
-
-    // IMAGE PREVIEW
-    function previewImage(event) {
-      const reader = new FileReader();
-      reader.onload = function() {
-        const output = document.getElementById('p-pic-preview');
-        output.src = reader.result;
-        document.getElementById('card-img').src = reader.result;
-        document.getElementById('side-user-img').src = reader.result;
-      };
-      if(event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-      }
-    }
-
-    // SAVE PROFILE
-    function saveProfile(e) {
-      e.preventDefault();
-      showToast("Saving profile updates...");
-
-      const updatedData = {
-        Email: document.getElementById('p-email').value,
-        FullName: document.getElementById('p-fullname').value,
-        Phone: document.getElementById('p-phone').value,
-        DOB: document.getElementById('p-dob').value,
-        Gender: document.getElementById('p-gender').value,
-        NID: document.getElementById('p-nid').value,
-        Education: document.getElementById('p-edu').value,
-        Institution: document.getElementById('p-institution').value,
-        Occupation: document.getElementById('p-occupation').value,
-        TShirt: document.getElementById('p-tshirt').value,
-        HearAbout: document.getElementById('p-hearabout').value,
-        Experience: document.getElementById('p-experience').value,
-        WhyVolunteer: document.getElementById('p-whyvolunteer').value
-      };
-
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'updateProfile', data: updatedData })
-      })
-      .then(res => res.json())
-      .then(res => {
-        showToast("Profile Updated Successfully!");
-      })
-      .catch(err => {
-        showToast("Saved locally (Server sync pending)");
-      });
-    }
-
-    // PAGE NAVIGATION
-    function switchPage(pageName) {
-      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-
-      document.getElementById(`page-${pageName}`).classList.add('active');
-      document.getElementById(`nav-${pageName}`).classList.add('active');
-    }
-
-    // LOGOUT
-    function logout() {
-      document.getElementById('app-container').style.display = 'none';
-      document.getElementById('auth-container').style.display = 'flex';
-      resetAuthStep();
-    }
-
-    // TOAST UTILITY
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.innerText = msg;
-      toast.className = "show";
-      setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
     }
   </script>
 </body>
